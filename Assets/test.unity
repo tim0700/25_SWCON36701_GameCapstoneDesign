@@ -390,8 +390,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 353302028}
-  - component: {fileID: 353302027}
-  - component: {fileID: 353302026}
+  - component: {fileID: 353302029}
   m_Layer: 0
   m_Name: GameObject
   m_TagString: Untagged
@@ -399,33 +398,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &353302026
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 353302025}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9cc0d7aa038cafc49b3d0b73d340efe1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &353302027
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 353302025}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f125b2c2565b3584db1ddada187149fb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  apiUrl: http://127.0.0.1:5000/
-  accessToken: 
-  runGetRequest: 0
 --- !u!4 &353302028
 Transform:
   m_ObjectHideFlags: 0
@@ -441,6 +413,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &353302029
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 353302025}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c18931266c48e748bb21dc30ae860a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &583898901
 GameObject:
   m_ObjectHideFlags: 0
