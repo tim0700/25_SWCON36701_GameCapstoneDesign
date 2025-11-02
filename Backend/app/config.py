@@ -36,7 +36,7 @@ class Settings(BaseSettings):
 
     # Model Configuration
     gemini_model: str = Field(
-        default="gemini-2.0-flash-exp",
+        default="gemini-2.5-pro",
         description="Gemini model to use for generation"
     )
     temperature: float = Field(

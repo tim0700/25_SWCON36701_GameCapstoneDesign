@@ -72,7 +72,7 @@ IMPORTANT INSTRUCTIONS:
 2. The character should feel authentic and believable within the game world.
 3. All personality traits, goals, and relationships should align with the seed description.
 4. Generate rich, detailed content that brings this character to life.
-5. Use the character_id exactly as provided in the 'character_id' field of the output.
+5. Use the character_id exactly as provided in the 'npc_id' field of the output.
 
 Generate the character sheet now."""
 

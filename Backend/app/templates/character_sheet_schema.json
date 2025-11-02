@@ -1,0 +1,60 @@
+{
+  "type": "object",
+  "properties": {
+    "npc_id": { "type": "string" },
+    "name": { "type": "string" },
+    "age": { "type": "string" },
+    "gender": { "type": "string" },
+    "role_title": { "type": "string" },
+    "faction": { "type": "string" },
+    "primary_location": { "type": "string" },
+    "psychological_profile": {
+      "type": "object",
+      "properties": {
+        "personality_keywords": { "type": "array", "items": { "type": "string" } },
+        "speaking_style": { "type": "string" },
+        "example_lines": { "type": "array", "items": { "type": "string" } },
+        "core_values": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["personality_keywords", "speaking_style", "core_values"]
+    },
+    "goals_and_motivations": {
+      "type": "object",
+      "properties": {
+        "long_term_goal": { "type": "string" },
+        "short_term_goal": { "type": "string" }
+      },
+      "required": ["long_term_goal", "short_term_goal"]
+    },
+    "relationships_and_knowledge": {
+      "type": "object",
+      "properties": {
+        "relationships": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "target_id": { "type": "string" },
+              "type": { "type": "string" },
+              "reason": { "type": "string" }
+            },
+            "required": ["target_id", "type", "reason"]
+          }
+        },
+        "knowledge_base": {
+          "type": "object",
+          "properties": {
+            "facts": { "type": "array", "items": { "type": "string" } },
+            "rumors": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["facts", "rumors"]
+        }
+      },
+      "required": ["relationships", "knowledge_base"]
+    }
+  },
+  "required": [
+    "npc_id", "name", "age", "gender", "role_title", "faction", "primary_location", 
+    "psychological_profile", "goals_and_motivations", "relationships_and_knowledge"
+  ]
+}

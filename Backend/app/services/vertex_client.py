@@ -1,25 +1,27 @@
-"""Vertex AI integration service.
+"""Vertex AI integration service using Google GenAI SDK.
 
 This module handles communication with Google's Vertex AI Gemini API for
-character sheet generation using structured output.
+character sheet generation using structured output with the new GenAI SDK.
 """
 
 import json
+import os
 import time
 from typing import Any, Dict
 
-import vertexai
-from vertexai.generative_models import GenerationConfig, GenerativeModel
+from google import genai
+from google.genai.types import GenerateContentConfig, GoogleSearch
 
 from app.config import settings
 from app.core.exceptions import ConfigurationError, LLMGenerationError
 from app.core.logger import get_logger
+from app.core.utils import convert_openapi_to_genai_schema
 
 logger = get_logger(__name__)
 
 
 class VertexAIClient:
-    """Client for interacting with Vertex AI Gemini API.
+    """Client for interacting with Vertex AI Gemini API using new GenAI SDK.
 
     This service handles initialization of Vertex AI, model configuration,
     and generation of character sheets using structured JSON output.
@@ -32,16 +34,25 @@ class VertexAIClient:
             ConfigurationError: If Vertex AI initialization fails
         """
         try:
-            logger.info("Initializing Vertex AI client")
+            logger.info("Initializing Vertex AI client with Google GenAI SDK")
 
-            # Initialize Vertex AI
-            vertexai.init(
+            # Set credentials environment variable if configured in settings
+            # but not already set in the OS environment
+            if settings.google_application_credentials:
+                if not os.getenv("GOOGLE_APPLICATION_CREDENTIALS"):
+                    # Convert to string if it's a Path object
+                    creds_path = str(settings.google_application_credentials)
+                    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = creds_path
+                    logger.info(f"Set GOOGLE_APPLICATION_CREDENTIALS from config: {creds_path}")
+                else:
+                    logger.info("Using existing GOOGLE_APPLICATION_CREDENTIALS from environment")
+
+            # Initialize GenAI client with Vertex AI
+            self.client = genai.Client(
+                vertexai=True,
                 project=settings.google_cloud_project,
                 location=settings.google_cloud_location
             )
-
-            # Initialize Gemini model
-            self.model = GenerativeModel(settings.gemini_model)
 
             logger.info(
                 f"Vertex AI client initialized successfully with model: {settings.gemini_model}"
@@ -82,27 +93,17 @@ class VertexAIClient:
         logger.debug(f"Prompt length: {len(prompt)} characters")
 
         try:
+            # Convert OpenAPI schema to GenAI format (uppercase types)
+            genai_schema = convert_openapi_to_genai_schema(schema)
+            logger.debug("Converted schema to GenAI format")
+
             # Configure generation with structured output
-            # Note: response_schema parameter support varies by SDK version
-            try:
-                generation_config = GenerationConfig(
-                    temperature=settings.temperature,
-                    max_output_tokens=settings.max_output_tokens,
-                    response_mime_type="application/json",
-                    response_schema=schema
-                )
-                logger.debug("Using structured output with response_schema")
-            except (TypeError, AttributeError) as schema_error:
-                # Fallback: if response_schema fails, use JSON mode without schema
-                logger.warning(
-                    f"response_schema parameter not supported: {str(schema_error)}. "
-                    f"Falling back to basic JSON mode."
-                )
-                generation_config = GenerationConfig(
-                    temperature=settings.temperature,
-                    max_output_tokens=settings.max_output_tokens,
-                    response_mime_type="application/json"
-                )
+            generation_config = GenerateContentConfig(
+                temperature=settings.temperature,
+                max_output_tokens=settings.max_output_tokens,
+                response_mime_type="application/json",
+                response_schema=genai_schema
+            )
 
             logger.debug(
                 f"Generation config: temperature={settings.temperature}, "
@@ -136,7 +137,7 @@ class VertexAIClient:
     def _generate_with_retry(
         self,
         prompt: str,
-        generation_config: GenerationConfig,
+        generation_config: GenerateContentConfig,
         max_retries: int = None
     ):
         """Generate content with retry logic for transient failures.
@@ -161,9 +162,11 @@ class VertexAIClient:
             try:
                 logger.debug(f"Generation attempt {attempt + 1}/{max_retries + 1}")
 
-                response = self.model.generate_content(
-                    prompt,
-                    generation_config=generation_config
+                # Use the new GenAI SDK's generate_content method
+                response = self.client.models.generate_content(
+                    model=settings.gemini_model,
+                    contents=prompt,
+                    config=generation_config
                 )
 
                 # Check if response is valid
@@ -210,14 +213,15 @@ class VertexAIClient:
 
             test_prompt = "Say 'OK' if you can read this."
 
-            generation_config = GenerationConfig(
+            generation_config = GenerateContentConfig(
                 temperature=0.1,
                 max_output_tokens=10
             )
 
-            response = self.model.generate_content(
-                test_prompt,
-                generation_config=generation_config
+            response = self.client.models.generate_content(
+                model=settings.gemini_model,
+                contents=test_prompt,
+                config=generation_config
             )
 
             if response and response.text:
