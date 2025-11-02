@@ -1,0 +1,143 @@
+{
+  "type": "object",
+  "description": "NPC Character Sheet v2.2 for Aetheria World",
+  "required": [
+    "character_id",
+    "name",
+    "occupation",
+    "background_summary",
+    "origin",
+    "long_term_goal"
+  ],
+  "properties": {
+    "character_id": {
+      "type": "string",
+      "description": "Unique identifier for the character"
+    },
+    "name": {
+      "type": "string",
+      "description": "Character's full name"
+    },
+    "age": {
+      "type": ["integer", "null"],
+      "description": "Character's age in years",
+      "minimum": 0
+    },
+    "gender": {
+      "type": ["string", "null"],
+      "description": "Character's gender"
+    },
+    "occupation": {
+      "type": "string",
+      "description": "Character's primary occupation or role"
+    },
+    "background_summary": {
+      "type": "string",
+      "description": "Brief summary of character's background and history"
+    },
+    "origin": {
+      "type": "string",
+      "description": "Character's place of origin or homeland"
+    },
+    "personality_traits": {
+      "type": "array",
+      "description": "List of key personality traits",
+      "items": {
+        "type": "string"
+      }
+    },
+    "values": {
+      "type": "array",
+      "description": "Character's core values and beliefs",
+      "items": {
+        "type": "string"
+      }
+    },
+    "fears": {
+      "type": "array",
+      "description": "Character's fears and anxieties",
+      "items": {
+        "type": "string"
+      }
+    },
+    "long_term_goal": {
+      "type": "string",
+      "description": "Character's primary long-term goal"
+    },
+    "short_term_goals": {
+      "type": "array",
+      "description": "Character's immediate short-term goals",
+      "items": {
+        "type": "string"
+      }
+    },
+    "motivations": {
+      "type": "array",
+      "description": "What drives and motivates the character",
+      "items": {
+        "type": "string"
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "description": "Character's relationships with other characters",
+      "items": {
+        "type": "object",
+        "required": ["character_name", "relationship_type", "description"],
+        "properties": {
+          "character_name": {
+            "type": "string",
+            "description": "Name of the related character"
+          },
+          "relationship_type": {
+            "type": "string",
+            "description": "Type of relationship (friend, enemy, family, etc.)"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the relationship"
+          }
+        }
+      }
+    },
+    "skills": {
+      "type": "array",
+      "description": "Character's skills and proficiencies",
+      "items": {
+        "type": "string"
+      }
+    },
+    "special_abilities": {
+      "type": "array",
+      "description": "Character's special abilities or powers",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notable_possessions": {
+      "type": "array",
+      "description": "Important items or possessions",
+      "items": {
+        "type": "string"
+      }
+    },
+    "secrets": {
+      "type": "array",
+      "description": "Character's hidden secrets",
+      "items": {
+        "type": "string"
+      }
+    },
+    "speech_pattern": {
+      "type": ["string", "null"],
+      "description": "Character's distinctive way of speaking"
+    },
+    "sample_dialogue": {
+      "type": "array",
+      "description": "Example dialogue lines for the character",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}
