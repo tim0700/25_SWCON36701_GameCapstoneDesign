@@ -21,7 +21,7 @@ pip install -r requirements.txt
 # 환경변수 파일 생성
 cp .env.example .env
 
-# .env 파일 편집 (3가지만 수정)
+# .env 파일 편집 (3가지만 수정, .env.example 참조)
 nano .env  # Windows: notepad .env
 ```
 
@@ -40,11 +40,11 @@ GOOGLE_APPLICATION_CREDENTIALS=your-key.json   # 크리덴셜 파일명
 
 ```bash
 # 서버 시작
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
 ```
 
 서버가 실행되면:
-- http://localhost:8000/docs 접속
+- http://localhost:8001/docs 접속
 - `POST /api/v1/generate-character-sheet` 클릭
 - "Try it out" 클릭
 - 예제 입력:
