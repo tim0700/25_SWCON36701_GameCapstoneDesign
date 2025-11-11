@@ -133,7 +133,7 @@ GameObject:
   - component: {fileID: 8711507}
   - component: {fileID: 8711506}
   m_Layer: 0
-  m_Name: NPC2
+  m_Name: Aura
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -221,7 +221,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a27c251cd0c23104686b26019e35363a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterID: NPC_002
+  characterID: NPC002
 --- !u!114 &8711507
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -293,7 +293,7 @@ GameObject:
   - component: {fileID: 43300528}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -381,50 +381,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   offset: 1.5
---- !u!1 &353302025
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 353302028}
-  - component: {fileID: 353302029}
-  m_Layer: 0
-  m_Name: GameObject
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &353302028
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 353302025}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.12431122, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &353302029
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 353302025}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2c18931266c48e748bb21dc30ae860a6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &583898901
 GameObject:
   m_ObjectHideFlags: 0
@@ -576,7 +532,7 @@ GameObject:
   - component: {fileID: 860654954}
   - component: {fileID: 860654953}
   m_Layer: 0
-  m_Name: NPC1
+  m_Name: Amber
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -664,7 +620,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a27c251cd0c23104686b26019e35363a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterID: NPC_001
+  characterID: NPC001
 --- !u!114 &860654954
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -732,7 +688,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2133238704}
-  - component: {fileID: 2133238703}
+  - component: {fileID: 2133238705}
+  - component: {fileID: 2133238706}
+  - component: {fileID: 2133238707}
   m_Layer: 0
   m_Name: QuestManager
   m_TagString: Untagged
@@ -740,18 +698,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &2133238703
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2133238702}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6e6c5b30b5ed81b43ade09261105a3a1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &2133238704
 Transform:
   m_ObjectHideFlags: 0
@@ -767,6 +713,57 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2133238705
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2133238702}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f20cc2d203448e4ba522e5afc86d89c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dialogueText: {fileID: 0}
+  objectiveText: {fileID: 0}
+  useTestJsonOnStart: 0
+  questJsonString: 
+  questgiverNpcId: 
+--- !u!114 &2133238706
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2133238702}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e3d0a1230807494b8db7e3bd7b2fc25, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  questStartTester: {fileID: 2133238705}
+  npc1Id: NPC001
+  npc1Name: Amber
+  npc1Desc: A cheerful outrider from Mondstadt.
+  npc2Id: NPC002
+  npc2Name: Aura
+  npc2Desc: A mysterious and quiet person.
+  locationId: loc_woods
+  locationName: Whispering Woods
+  buttonText: {fileID: 0}
+--- !u!114 &2133238707
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2133238702}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4faf4c40c38ca2c479f3ed6b3d89d263, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -775,5 +772,4 @@ SceneRoots:
   - {fileID: 43300527}
   - {fileID: 860654952}
   - {fileID: 8711505}
-  - {fileID: 353302028}
   - {fileID: 2133238704}

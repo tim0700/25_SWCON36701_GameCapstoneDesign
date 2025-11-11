@@ -4,13 +4,14 @@ using UnityEngine.Networking;
 using System.Collections;
 using System.Text;
 using TMPro;
+using Unity.VisualScripting;
 
 public class QuestRequester : MonoBehaviour
 {
     public QuestStartTester questStartTester;
     private string serverUrl = "http://127.0.0.1:8000/generate-quest";
 
-    // --- Äù½ºÆ® Àç·á¸¦ Inspector¿¡¼­ ÀÔ·Â ---
+    // --- ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½á¸¦ Inspectorï¿½ï¿½ï¿½ï¿½ ï¿½Ô·ï¿½ ---
     [Header("Quest Giver (NPC 1)")]
     public string npc1Id = "npc_amber";
     public string npc1Name = "Amber";
@@ -19,29 +20,29 @@ public class QuestRequester : MonoBehaviour
     [Header("Target NPC (NPC 2)")]
     public string npc2Id = "npc_aura";
     public string npc2Name = "Aura";
-    public string npc2Desc = "A mysterious and quiet person."; // NPC 2ÀÇ ¼³¸í Ãß°¡
+    public string npc2Desc = "A mysterious and quiet person."; // NPC 2ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 
     [Header("Target Location")]
     public string locationId = "loc_woods";
-    public string locationName = "Whispering Woods"; // Àå¼Ò ÀÌ¸§ Ãß°¡
+    public string locationName = "Whispering Woods"; // ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½ ï¿½ß°ï¿½
 
     public TextMeshProUGUI buttonText;
 
-    // ---  FastAPI·Î º¸³¾ µ¥ÀÌÅÍ ±¸Á¶ (QuestContextData) ---
+    // ---  FastAPIï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (QuestContextData) ---
     [System.Serializable]
     private class QuestContextData
     {
-        // NPC 1 (Äù½ºÆ® Á¦°øÀÚ)
+        // NPC 1 (ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
         public string npc1_id;
         public string npc1_name;
         public string npc1_desc;
 
-        // NPC 2 (´ë»ó)
+        // NPC 2 (ï¿½ï¿½ï¿½)
         public string npc2_id;
         public string npc2_name;
         public string npc2_desc;
 
-        // Location (´ë»ó)
+        // Location (ï¿½ï¿½ï¿½)
         public string location_id;
         public string location_name;
     }
@@ -52,29 +53,35 @@ public class QuestRequester : MonoBehaviour
         public string quest_json;
     }
 
-    public void OnCreateQuestButtonPressed()
+    public void OnCreateQuestButtonPressed(string contextData)
     {
-        Debug.Log("Äù½ºÆ® »ý¼º ¿äÃ» ½ÃÀÛ...");
+        Debug.Log("ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã» ï¿½ï¿½ï¿½ï¿½...");
         if (buttonText != null) buttonText.text = "Generating...";
-        StartCoroutine(FetchQuestFromServer());
+        StartCoroutine(FetchQuestFromServer(contextData));
     }
 
-    private IEnumerator FetchQuestFromServer()
+    private IEnumerator FetchQuestFromServer(string contextData)
     {
+        // Prepare context data to send
+        // contextData is a comma-separated string: "npcId, npcName, npcDesc, locationId, locationName"
+        string[] dataParts = contextData.Split(',');
 
         QuestContextData dataToSend = new QuestContextData
         {
-            npc1_id = this.npc1Id,
-            npc1_name = this.npc1Name,
-            npc1_desc = this.npc1Desc,
+            npc1_id = dataParts[0].Trim(),
+            npc1_name = dataParts[1].Trim(),
+            npc1_desc = dataParts[2].Trim(),
 
-            npc2_id = this.npc2Id,
-            npc2_name = this.npc2Name,
-            npc2_desc = this.npc2Desc,
+            // For simplicity, NPC 2 data is left null
+            npc2_id = null,
+            npc2_name = null,
+            npc2_desc = null,
 
-            location_id = this.locationId,
-            location_name = this.locationName
+            location_id = dataParts[3].Trim(),
+            location_name = dataParts[4].Trim()
         };
+
+
         string contextJson = JsonUtility.ToJson(dataToSend);
 
         using (UnityWebRequest webRequest = new UnityWebRequest(serverUrl, "POST"))
@@ -92,9 +99,10 @@ public class QuestRequester : MonoBehaviour
                 FastAPIResponse response = JsonUtility.FromJson<FastAPIResponse>(responseJson);
                 string generatedQuestJson = response.quest_json;
 
+                Debug.Log("Received Quest JSON: " + generatedQuestJson);
                 if (string.IsNullOrEmpty(generatedQuestJson))
                 {
-                    Debug.LogError("Äù½ºÆ® JSONÀÌ ºñ¾îÀÖ½À´Ï´Ù.");
+                    Debug.LogError("ï¿½ï¿½ï¿½ï¿½Æ® JSONï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ö½ï¿½ï¿½Ï´ï¿½.");
                     if (buttonText != null) buttonText.text = "Error!";
                     yield break;
                 }
@@ -104,7 +112,7 @@ public class QuestRequester : MonoBehaviour
             }
             else
             {
-                Debug.LogError("¼­¹ö ¿äÃ» ½ÇÆÐ: " + webRequest.error);
+                Debug.LogError("ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã» ï¿½ï¿½ï¿½ï¿½: " + webRequest.error);
                 if (buttonText != null) buttonText.text = "Connection Failed";
             }
         }
