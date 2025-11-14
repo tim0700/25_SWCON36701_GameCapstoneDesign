@@ -129,6 +129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 67471080}
   - component: {fileID: 67471079}
+  - component: {fileID: 67471081}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -206,6 +207,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &67471081
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 67471078}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fcec38b9bb6fe644acb9dd4b186e686, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  offset: 1.5
 --- !u!1 &72219541
 GameObject:
   m_ObjectHideFlags: 0
@@ -236,7 +250,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93693d00e92e7a4469198a55d457657c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  npcId: npc_amber
+  npcId: NPC001
   interactionOffset: 1.5
 --- !u!212 &72219543
 SpriteRenderer:
@@ -418,7 +432,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1513f54645ad4f74c837f245f3839740, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  entityId: loc_woods
+  entityId: LOC001
   eventType: 0
 --- !u!61 &220910075
 BoxCollider2D:
@@ -922,8 +936,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 705074063}
-  - component: {fileID: 705074064}
   - component: {fileID: 705074065}
+  - component: {fileID: 705074067}
+  - component: {fileID: 705074066}
   m_Layer: 0
   m_Name: _QuestTester
   m_TagString: Untagged
@@ -946,28 +961,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &705074064
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 705074061}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e3d0a1230807494b8db7e3bd7b2fc25, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  questStartTester: {fileID: 705074065}
-  npc1Id: npc_amber
-  npc1Name: Amber
-  npc1Desc: A cheerful outrider from Mondstadt.
-  npc2Id: npc_aura
-  npc2Name: Aura
-  npc2Desc: A mysterious and quiet person.
-  locationId: loc_woods
-  locationName: Whispering Woods
-  buttonText: {fileID: 0}
 --- !u!114 &705074065
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -983,41 +976,35 @@ MonoBehaviour:
   dialogueText: {fileID: 928128645}
   objectiveText: {fileID: 325309121}
   useTestJsonOnStart: 0
-  questJsonString: "{\r\n  \"quest_title\": \"Clearing the Woods\",\r\n  \"quest_giver_npc_id\":
-    \"npc_amber\",\r\n  \"quest_type\": \"SIDE_QUEST\",\r\n  \"quest_summary\": \"Amber
-    needs help clearing out a monster den and investigating a nearby dungeon.\",\r\n 
-    \"quest_steps\": [\r\n    {\r\n      \"step_id\": 1,\r\n      \"objective_type\":
-    \"TALK\",\r\n      \"description_for_player\": \"Talk to Amber to start the quest.\",\r\n     
-    \"dialogues\": {\r\n        \"on_start\": [\r\n          {\r\n            \"speaker_id\":
-    \"npc_amber\",\r\n            \"line\": \"Traveler! The woods are too dangerous.
-    A nasty Goblin Chief has appeared!\"\r\n          }\r\n        ],\r\n       
-    \"on_complete\": []\r\n      },\r\n      \"details\": {\r\n        \"target_npc_id\":
-    \"npc_amber\"\r\n      }\r\n    },\r\n    {\r\n      \"step_id\": 2,\r\n     
-    \"objective_type\": \"KILL\",\r\n      \"description_for_player\": \"Find and
-    defeat the 'Goblin Chief' in the woods.\",\r\n      \"dialogues\": {\r\n       
-    \"on_start\": [\r\n          {\r\n            \"speaker_id\": \"npc_amber\",\r\n           
-    \"line\": \"Please find the 'Goblin Chief' (monster_goblin_chief) and defeat
-    it! Just click on it.\"\r\n          }\r\n        ],\r\n        \"on_complete\":
-    []\r\n      },\r\n      \"details\": {\r\n        \"target_monster_id\": \"monster_goblin_chief\"\r\n     
-    }\r\n    },\r\n    {\r\n      \"step_id\": 3,\r\n      \"objective_type\": \"DUNGEON\",\r\n     
-    \"description_for_player\": \"The monster came from the 'Evil Cave'. Investigate
-    (clear) it.\",\r\n      \"dialogues\": {\r\n        \"on_start\": [\r\n         
-    {\r\n            \"speaker_id\": \"player_character\",\r\n            \"line\":
-    \"(The Goblin Chief is defeated. Now to check that 'Evil Cave'.)\"\r\n         
-    }\r\n        ],\r\n        \"on_complete\": [] \r\n      },\r\n      \"details\":
-    {\r\n        \"target_dungeon_id\": \"dungeon_evil_cave\"\r\n      }\r\n    },\r\n   
-    {\r\n      \"step_id\": 4,\r\n      \"objective_type\": \"GOTO\",\r\n      \"description_for_player\":
-    \"Now that the area is safe, go to 'loc_woods' to confirm.\",\r\n      \"dialogues\":
-    {\r\n        \"on_start\": [\r\n          {\r\n            \"speaker_id\": \"player_character\",\r\n           
-    \"line\": \"(The cave is clear. I should check the rest of the woods.)\"\r\n         
-    }\r\n        ],\r\n        \"on_complete\": [\r\n          {\r\n            \"speaker_id\":
-    \"player_character\",\r\n            \"line\": \"(The woods seem peaceful now.
-    Time to report back.)\"\r\n          }\r\n        ]\r\n      },\r\n      \"details\":
-    {\r\n        \"target_location_id\": \"loc_woods\"\r\n      }\r\n    },\r\n   
-    {\r\n      \"step_id\": 5,\r\n      \"objective_type\": \"TALK\",\r\n      \"description_for_player\":
-    \"Return to Amber.\",\r\n      \"dialogues\": {\r\n        \"on_start\": [],\r\n       
-    \"on_complete\": []\r\n      },\r\n      \"details\": {\r\n        \"target_npc_id\":
-    \"npc_amber\"\r\n      }\r\n    }\r\n  ],\r\n  \"quest_rewards\": []\r\n}"
+  questJsonString: 
+--- !u!114 &705074066
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 705074061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e3d0a1230807494b8db7e3bd7b2fc25, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  questStartTester: {fileID: 705074065}
+  questInputGenerator: {fileID: 705074067}
+  questGiverNpcId: npc_amber
+  buttonText: {fileID: 0}
+--- !u!114 &705074067
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 705074061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4faf4c40c38ca2c479f3ed6b3d89d263, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &928128644
 GameObject:
   m_ObjectHideFlags: 0
@@ -1151,8 +1138,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 286, y: -158}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchoredPosition: {x: 2.4678, y: -143}
+  m_SizeDelta: {x: 742.9355, y: 80}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &939411125
 GameObject:
@@ -1185,7 +1172,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1513f54645ad4f74c837f245f3839740, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  entityId: dungeon_evil_cave
+  entityId: CAVE
   eventType: 2
 --- !u!61 &939411127
 BoxCollider2D:
@@ -1321,7 +1308,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &952598542
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1386,10 +1373,10 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 705074064}
+      - m_Target: {fileID: 705074066}
         m_TargetAssemblyTypeName: QuestRequester, Assembly-CSharp
         m_MethodName: OnCreateQuestButtonPressed
-        m_Mode: 1
+        m_Mode: 5
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -1602,7 +1589,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93693d00e92e7a4469198a55d457657c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  npcId: npc_aura
+  npcId: NPC002
   interactionOffset: 1.5
 --- !u!212 &1439792069
 SpriteRenderer:
@@ -1705,7 +1692,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1513f54645ad4f74c837f245f3839740, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  entityId: monster_goblin_chief
+  entityId: DEER
   eventType: 1
 --- !u!61 &1723000009
 BoxCollider2D:
