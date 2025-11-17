@@ -97,6 +97,13 @@ async def generate_character_sheet(request: CharacterRequest):
         prompt=prompt,
         schema=schema
     )
+    
+    print(character_data)
+
+    # Step 3.5: Insert Charactere Sheet into Database
+    from app.database import InsertCharacterSheetinDatabase
+    InsertCharacterSheetinDatabase(character_data)
+
 
     # Step 4: Validate with Pydantic model
     logger.info("Validating generated character sheet")
