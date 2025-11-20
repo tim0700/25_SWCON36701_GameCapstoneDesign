@@ -3,6 +3,8 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import vertexai
 from vertexai.generative_models import GenerativeModel, Part
+import json
+import re
 
 # --- 1. Vertex AI 설정 ---
 PROJECT_ID = "questtest-477417"  # 👈 본인의 Google Cloud Project ID
@@ -68,11 +70,69 @@ QUEST_JSON_FORMAT_EXAMPLE = """
 }
 """
 
-# --- 3. (수정) create_quest_prompt 함수 (동적 규칙 생성) ---
+# LLM 오류 보정 함수들
+
+# Gemini 호출 헬퍼 함수
+async def call_gemini_async(prompt_text: str) -> str:
+    model = GenerativeModel(MODEL_NAME)
+    response = await model.generate_content_async([Part.from_text(prompt_text)])
+    
+    quest_json_string = response.text
+    
+    # 마크다운(` ```json ... ``` `) 제거
+    if "```json" in quest_json_string:
+        quest_json_string = quest_json_string.split("```json")[1].split("```")[0]
+    elif "```" in quest_json_string:
+         quest_json_string = quest_json_string.split("```")[1].split("```")[0]
+         
+    return quest_json_string.strip()
+
+# Python 오류 보정 함수 
+def fix_common_json_errors(json_str: str, context: QuestContext) -> str:
+    
+    corrected_str = json_str
+    
+    try:
+        # 오류 1: "on_start": [ "대사" ] -> [ {"speaker_id": ..., "line": ...} ]
+        # ([\s\S]*?는 줄바꿈을 포함한 모든 문자를 찾습니다)
+        pattern = r'("on_start"\s*:\s*\[\s*)"([\s\S]*?)"(\s*\])'
+        
+        # 보정: speaker_id를 퀘스트 제공자(npc1)로 우선 지정
+        replacement = f'\\1{{"speaker_id": "{context.npc1_id}", "line": "\\2"}}\\3'
+        corrected_str = re.sub(pattern, replacement, corrected_str, flags=re.IGNORECASE)
+        
+        # 추후 오류에 따라 보강
+
+    except Exception as e:
+        print(f"JSON 보정 중 오류 발생: {e}")
+        return json_str # 보정 실패 시 원본 반환
+        
+    return corrected_str
+
+# 재시도 프롬프트 생성 함수
+def create_retry_prompt(original_prompt: str, bad_json: str, error_message: str) -> str:
+    return f"""
+    Your previous attempt to generate a JSON failed with a parsing error.
+    
+    ERROR MESSAGE:
+    {error_message}
+    
+    FAILED JSON (This is what you generated):
+    {bad_json}
+    
+    Please correct your mistake and regenerate the JSON exactly according to the original instructions.
+    Do NOT include any text other than the raw JSON object.
+    
+    ORIGINAL INSTRUCTIONS:
+    {original_prompt}
+    """
+
+
+# --- 3. create_quest_prompt 함수 (동적 규칙 생성) ---
 def create_quest_prompt(context: QuestContext) -> str:
     """Unity에서 받은 퀘스트 재료로 Gemini 프롬프트를 생성합니다."""
 
-    # (신규) 재료가 있는지(빈 문자열이 아닌지) 확인하여 프롬프트 구성
+    # 재료가 있는지(빈 문자열이 아닌지) 확인하여 프롬프트 구성
     
     elements = [
         f"- Quest Giver (NPC 1): ID: {context.npc1_id}, Name: {context.npc1_name}",
@@ -86,7 +146,7 @@ def create_quest_prompt(context: QuestContext) -> str:
         f"3.  At least one \"TALK\" step MUST use \"details\": {{\"target_npc_id\": \"{context.npc2_id}\"}}."
     ]
 
-    # --- (신규) 동적 규칙 생성 ---
+    # --- 동적 규칙 생성 ---
     # 몬스터 ID가 DB에 존재하면(빈 문자열이 아니면) KILL 규칙 추가
     if context.monster_id:
         rules.append(f"4.  You MAY use a \"KILL\" objective. If you do, you MUST use \"details\": {{\"target_monster_id\": \"{context.monster_id}\"}}.")
@@ -101,7 +161,6 @@ def create_quest_prompt(context: QuestContext) -> str:
     else:
         rules.append("5.  DO NOT use the \"DUNGEON\" objective type, as no dungeon_id was provided.")
         
-    # --- (이하 규칙은 동일) ---
     rules.append("6.  (!!!) DO NOT invent new IDs. Use ONLY the IDs provided in the 'Elements' list.")
     rules.append("7.  All dialogue MUST be objects ( {{\"speaker_id\": \"...\", \"line\": \"...\"}} ), NOT simple strings.")
     rules.append("8.  \"GOTO\" steps MUST have `on_complete` dialogues.")
@@ -129,29 +188,63 @@ def create_quest_prompt(context: QuestContext) -> str:
 # (NpcInfo -> QuestContext로 타입 변경)
 @app.post("/generate-quest")
 async def generate_quest(context: QuestContext):
-    """Unity로부터 퀘스트 "재료"를 받아 Gemini로 중계합니다."""
+    
+    # 1. 원본 프롬프트 생성
+    original_prompt = create_quest_prompt(context)
     
     try:
-        prompt_text = create_quest_prompt(context)
-        
-        model = GenerativeModel(MODEL_NAME)
-        response = await model.generate_content_async([Part.from_text(prompt_text)])
-        quest_json_string = response.text
-        
-        # ... (JSON 정리 로직) ...
-        if "```" in quest_json_string:
-            quest_json_string = quest_json_string.split("```json")[1].split("```")[0]
-        quest_json_string = quest_json_string.strip()
+        # --- 1차 시도 ---
+        print("--- 1차 퀘스트 생성 시도 ---")
+        json_string_v1 = await call_gemini_async(original_prompt)
 
-        print(f"--- Quest Generated for {context.npc1_name} ---")
-        print(quest_json_string)
-        print("---------------------------------------")
+        # --- 방법 2: 1차 보정 시도 (Python Regex) ---
+        print("--- 1차 보정 시도 (Python Regex) ---")
+        fixed_json_string_v1 = fix_common_json_errors(json_string_v1, context)
 
-        return {"quest_json": quest_json_string}
+        try:
+            # --- 1차 파싱 시도 (Python 검증) ---
+            json.loads(fixed_json_string_v1) # 파싱 테스트
+            
+            print("--- 1차 시도: 보정 후 파싱 성공! ---")
+            print(fixed_json_string_v1)
+            print("---------------------------------------")
+            return {"quest_json": fixed_json_string_v1} # (성공) Unity로 전송
 
-    except Exception as e:
-        print(f"Error: {e}")
-        return {"error": str(e)}
+        except Exception as e_parse1:
+            # --- 1차 파싱 실패 -> 2차 시도 (스마트 재시도) 실행 ---
+            print(f"--- 1차 파싱 실패 (오류: {e_parse1}). 2차 재시도(Smart Retry) 시작 ---")
+            
+            # --- 방법 1: 오류 피드백 프롬프트 생성 ---
+            retry_prompt = create_retry_prompt(original_prompt, json_string_v1, str(e_parse1))
+            
+            # --- 2차 생성 시도 ---
+            json_string_v2 = await call_gemini_async(retry_prompt)
+            
+            # --- 방법 2: 2차 보정 시도 ---
+            print("--- 2차 보정 시도 (Python Regex) ---")
+            fixed_json_string_v2 = fix_common_json_errors(json_string_v2, context)
+            
+            try:
+                # --- 2차 파싱 시도 (Python 검증) ---
+                json.loads(fixed_json_string_v2) # 파싱 테스트
+                
+                print("--- 2차 시도: 보정 후 파싱 성공! ---")
+                print(fixed_json_string_v2)
+                print("---------------------------------")
+                return {"quest_json": fixed_json_string_v2} # (성공) Unity로 전송
+            
+            except Exception as e_parse2:
+                # --- 최종 실패 ---
+                print(f"--- 2차 재시도도 최종 실패 (오류: {e_parse2}) ---")
+                print(f"--- 실패한 JSON: {fixed_json_string_v2} ---")
+                return {"error": f"Failed to generate valid JSON after 2 attempts: {e_parse2}"}
+
+    except Exception as e_initial:
+        # (Google 403 권한 오류 등) 1차 호출 자체가 실패한 경우
+        print(f"--- 1차 생성부터 실패 (Gemini API 오류): {e_initial} ---")
+        return {"error": str(e_initial)}
+
+
 
 # --- 5. 서버 실행 (테스트용) ---
 if __name__ == "__main__":
