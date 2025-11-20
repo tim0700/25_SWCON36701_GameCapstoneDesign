@@ -97,8 +97,6 @@ async def generate_character_sheet(request: CharacterRequest):
         prompt=prompt,
         schema=schema
     )
-    
-    print(character_data)
 
     # Step 3.5: Insert Charactere Sheet into Database
     from app.database import InsertCharacterSheetinDatabase

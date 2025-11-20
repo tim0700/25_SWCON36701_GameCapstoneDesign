@@ -1,5 +1,4 @@
 import sqlite3
-import json
 
 # Insert generated character sheet at database
 def InsertCharacterSheetinDatabase(json_file: str):
