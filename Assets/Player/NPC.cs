@@ -19,22 +19,4 @@ public class NPC : MonoBehaviour
         }
     }
 
-    // 4. NPC 클릭 시 호출됨
-    private void OnMouseDown()
-    {
-        // 1. 플레이어 오브젝트를 찾음
-        GameObject player = GameObject.FindWithTag("Player");
-        if (player == null)
-        {
-            Debug.LogError("씬에 'Player' 태그를 가진 오브젝트가 없습니다!");
-            return;
-        }
-
-        // 2. 플레이어를 이 NPC 옆으로 이동시킴
-        player.transform.position = new Vector2(transform.position.x + interactionOffset, transform.position.y);
-        Debug.Log($"{player.name}를 {this.name} 옆으로 이동시킴");
-
-        // 3. "두뇌"에게 'TALK' 이벤트가 발생했음을 알림
-        QuestStartTester.Instance.NotifyEvent("TALK", npcId);
-    }
 }

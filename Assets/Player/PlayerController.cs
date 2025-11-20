@@ -1,66 +1,89 @@
-using UnityEditor.Rendering.LookDev;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    // Ÿ�� ������ �̵��� ���� �Ÿ� ������
     public float offset = 1.5f;
+
+    private QuestRequester questRequester;
+    private QuestStartTester questStartTester;
+
+    void Start()
+    {
+        questRequester = FindFirstObjectByType<QuestRequester>();
+        questStartTester = FindFirstObjectByType<QuestStartTester>();
+    }
 
     void Update()
     {
-        // ���콺 ���� ��ư Ŭ�� ����
         if (Input.GetMouseButtonDown(0))
         {
-            // ���콺 Ŭ�� ��ġ�� ���� ��ǥ�� ��ȯ
             Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
-            // Ŭ���� ��ġ�� �ݶ��̴��� �ִ��� Ȯ���ϱ� ���� Ray �߻�
             RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
 
-            // ���� �ݶ��̴��� �¾Ҵٸ� (���𰡸� Ŭ���ߴٸ�)
             if (hit.collider != null)
             {
-                // Ŭ���� ������Ʈ���� CharacterInfo ������Ʈ�� ������
-                CharacterInfo targetCharacter = hit.collider.GetComponent<CharacterInfo>();
-
-                // CharacterInfo ������Ʈ�� �ִٸ� (Ÿ�� ĳ���͸� Ŭ���ߴٸ�)
-                if (targetCharacter != null)
+                // 1. NPC를 클릭했는지 확인 (CharacterInfo 대신 NPC 사용)
+                NPC targetNPC = hit.collider.GetComponent<NPC>();
+                if (targetNPC != null)
                 {
-                    // Ÿ�� ĳ���� ������ �÷��̾� ��ġ �̵�
-                    // Ÿ���� �����ʿ� �ڸ��� �⵵�� ��ġ ����
-                    Vector2 targetPosition = hit.collider.transform.position;
-                    transform.position = new Vector2(targetPosition.x + offset, targetPosition.y);
-
-                    // Ÿ�� ĳ������ ID�� �ֿܼ� ���
-                    Debug.Log("Clicked Character ID: " + targetCharacter.characterID);
-
-                    // +) Send Quest Trigger Event to QuestInputGenerator(first, replace trigger with scene start)
-                    QuestInputGenerator questInputGenerator = FindFirstObjectByType<QuestInputGenerator>();
-
-                    string contextData = "";
-                    if (questInputGenerator != null)
-                    {
-                        contextData = questInputGenerator.GatherContextData(targetCharacter.characterID);
-                        Debug.Log("Gathered Context Data: " + contextData);
-                    }
-
-                    // +) Trigger Quest Request to FastAPI Server
-                    // Once quest is generated, QuestStartTester will start the quest
-                    // While generated quest is in progress, this part will be skipped until the quest is completed
-                    // 
-                    QuestRequester questRequester = FindFirstObjectByType<QuestRequester>();
-                    if (questRequester != null && questRequester.questStartTester.isQuestInProgress == false)
-                    {
-                        questRequester.OnCreateQuestButtonPressed(contextData);
-                    }
+                    HandleNpcClick(targetNPC);
+                    return; // NPC 클릭 처리 완료
                 }
+
+                // 2. 장소/몬스터/던전을 클릭했는지 확인
+                QuestLocation targetLocation = hit.collider.GetComponent<QuestLocation>();
+                if (targetLocation != null)
+                {
+                    HandleLocationClick(targetLocation);
+                    return; // 장소 클릭 처리 완료
+                }
+
+                // (만약 CharacterInfo를 꼭 써야 한다면 GetComponent<NPC>() 대신 사용)
             }
-            // �ݶ��̴��� ���� �ʾҴٸ� (����� Ŭ���ߴٸ�)
             else
             {
-                // Ŭ���� ���� ��ǥ�� �÷��̾� ��ġ�� �ٷ� �̵�
+                // 빈 공간을 클릭하면 플레이어 이동
                 transform.position = new Vector2(mousePosition.x, mousePosition.y);
             }
+        }
+    }
+
+    void HandleNpcClick(NPC target)
+    {
+        // 1. 플레이어를 NPC 옆으로 이동
+        Vector2 targetPosition = target.transform.position;
+        transform.position = new Vector2(targetPosition.x + offset, targetPosition.y);
+
+        // 2. 퀘스트 진행 상태 확인
+        if (questStartTester != null && questStartTester.isQuestInProgress)
+        {
+            // --- 퀘스트가 진행 중일 때 ---
+            // 퀘스트 매니저에게 "TALK" 이벤트를 알립니다.
+            Debug.Log($"[PlayerController] 퀘스트 이벤트 알림: TALK {target.npcId}");
+            QuestStartTester.Instance.NotifyEvent("TALK", target.npcId);
+        }
+        else if (questRequester != null)
+        {
+            // --- 퀘스트가 없을 때 (새 퀘스트 생성 시도) ---
+            // QuestRequester에게 이 NPC ID로 퀘스트 생성을 요청합니다.
+            Debug.Log($"[PlayerController] 새 퀘스트 생성 요청: {target.npcId}");
+            questRequester.OnCreateQuestButtonPressed(target.npcId);
+        }
+    }
+
+    void HandleLocationClick(QuestLocation target)
+    {
+        // 1. 플레이어를 장소로 이동
+        transform.position = target.transform.position;
+
+        // 2. 퀘스트가 진행 중일 때만 처리
+        if (questStartTester != null && questStartTester.isQuestInProgress)
+        {
+            string eventType = target.eventType.ToString(); // GOTO, KILL, DUNGEON
+            string entityId = target.entityId;
+
+            Debug.Log($"[PlayerController] 퀘스트 이벤트 알림: {eventType} {entityId}");
+            QuestStartTester.Instance.NotifyEvent(eventType, entityId);
         }
     }
 }

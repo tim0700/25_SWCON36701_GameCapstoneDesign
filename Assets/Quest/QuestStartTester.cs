@@ -1,8 +1,8 @@
-// QuestStartTester.cs
+
 using UnityEngine;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using TMPro; 
+using TMPro;
 
 public class QuestStartTester : MonoBehaviour
 {
@@ -23,8 +23,6 @@ public class QuestStartTester : MonoBehaviour
     private QuestData currentQuest;
     private int currentStepIndex;
 
-    public string questgiverNpcId;
-
     void Awake()
     {
         if (Instance == null) Instance = this;
@@ -35,12 +33,12 @@ public class QuestStartTester : MonoBehaviour
     {
         if (useTestJsonOnStart && !string.IsNullOrEmpty(questJsonString))
         {
-            Debug.LogWarning("--- �׽�Ʈ ���� ����Ʈ ���� ---");
+            Debug.LogWarning("--- 테스트 모드로 퀘스트 시작 ---");
             StartQuestFromJson(questJsonString);
         }
         else
         {
-            Debug.Log("--- ���� ��� ���� ���� ---");
+            Debug.Log("--- 서버 대기 모드로 시작 ---");
         }
     }
 
@@ -55,7 +53,7 @@ public class QuestStartTester : MonoBehaviour
         }
         catch (System.Exception ex)
         {
-            Debug.LogError($"����Ʈ �Ľ� ����: {ex.Message}");
+            Debug.LogError($"퀘스트 파싱 오류: {ex.Message}");
         }
     }
 
@@ -63,10 +61,10 @@ public class QuestStartTester : MonoBehaviour
     {
         if (currentQuest == null || stepIndex >= currentQuest.QuestSteps.Count)
         {
-            Debug.Log("����Ʈ�� ��� �ܰ踦 �Ϸ��߽��ϴ�!");
+            Debug.Log("퀘스트의 모든 단계를 완료했습니다!");
             dialogueText.text = "Quest Complete!";
             objectiveText.text = "";
-            currentQuest = null; 
+            currentQuest = null;
             return;
         }
 
@@ -80,7 +78,7 @@ public class QuestStartTester : MonoBehaviour
         }
         else
         {
-            dialogueText.text = ""; 
+            dialogueText.text = "";
         }
     }
 
@@ -92,7 +90,7 @@ public class QuestStartTester : MonoBehaviour
 
         bool typeMatch = false;
 
-        // 1.  objective_type �� (GOTO, TALK, KILL, DUNGEON ��� ó��)
+        // 1. objective_type 비교 (GOTO, TALK, KILL, DUNGEON 모두 처리)
         if (currentStep.ObjectiveType.ToUpper() == eventType.ToUpper())
         {
             if (eventType == "TALK")
@@ -103,11 +101,11 @@ public class QuestStartTester : MonoBehaviour
             {
                 typeMatch = (currentStep.Details.TargetLocationId == eventId);
             }
-            else if (eventType == "KILL") // ���� óġ
+            else if (eventType == "KILL") 
             {
                 typeMatch = (currentStep.Details.TargetMonsterId == eventId);
             }
-            else if (eventType == "DUNGEON") // ���� Ŭ����
+            else if (eventType == "DUNGEON") 
             {
                 typeMatch = (currentStep.Details.TargetDungeonId == eventId);
             }
@@ -115,50 +113,54 @@ public class QuestStartTester : MonoBehaviour
 
         if (typeMatch)
         {
-            // 2.  �Ϸ� �α׸� Ÿ�Կ� �°� ����
+
+            // 2. 완료 로그를 타입에 맞게 변경
             if (eventType == "KILL")
             {
-                Debug.Log($"��ǥ �޼�: ���� '{eventId}'�� óġ�߽��ϴ�.");
+
+                Debug.Log($"목표 달성: 몬스터 '{eventId}'를 처치했습니다.");
             }
             else if (eventType == "DUNGEON")
             {
-                Debug.Log($"��ǥ �޼�: ���� '{eventId}'�� Ŭ�����߽��ϴ�.");
+   
+                Debug.Log($"목표 달성: 던전 '{eventId}'를 클리어했습니다.");
             }
             else
             {
-                Debug.Log($"��ǥ �޼�: {eventType} - {eventId}");
+
+                Debug.Log($"목표 달성: {eventType} - {eventId}");
             }
 
             CompleteStep(currentStepIndex);
         }
         else
         {
-            // 3. ���� �޽��� ��ȭ
             string requiredDetail = "ID_UNKNOWN";
             if (currentStep.ObjectiveType == "TALK") requiredDetail = currentStep.Details.TargetNpcId;
             else if (currentStep.ObjectiveType == "GOTO") requiredDetail = currentStep.Details.TargetLocationId;
             else if (currentStep.ObjectiveType == "KILL") requiredDetail = currentStep.Details.TargetMonsterId;
             else if (currentStep.ObjectiveType == "DUNGEON") requiredDetail = currentStep.Details.TargetDungeonId;
 
-            Debug.Log($"�߸��� Ŭ��: (�ʿ�: {currentStep.ObjectiveType} - {requiredDetail}), (Ŭ��: {eventType} - {eventId})");
+            Debug.Log($"잘못된 클릭: (필요: {currentStep.ObjectiveType} - {requiredDetail}), (클릭: {eventType} - {eventId})");
         }
     }
-    // ���� �ܰ踦 �Ϸ��ϰ� ���� �ܰ�� �Ѿ�� �Լ�
+
+    // 현재 단계를 완료하고 다음 단계로 넘어가는 함수
     private void CompleteStep(int stepIndex)
     {
         QuestStep step = currentQuest.QuestSteps[stepIndex];
 
-        // 1. GOTO Ÿ���� ���, on_complete ��� ���
+        // 1. GOTO 타입인 경우, on_complete 대사 출력
         if (step.ObjectiveType == "GOTO" && step.Dialogues.OnComplete.Count > 0)
         {
             dialogueText.text = $"[{step.Dialogues.OnComplete[0].SpeakerId}]: {step.Dialogues.OnComplete[0].Line}";
         }
 
-        // 2. ���� �ܰ�� �ε��� ����
+        // 2. 다음 단계로 인덱스 증가
         currentStepIndex++;
 
-        // 3. (��� ��� ��) ���� �ܰ� ����
-        Invoke("StartNextStep", 1.5f); // 1.5�� ���
+        // 3. (잠시 대기 후) 다음 단계 시작
+        Invoke("StartNextStep", 1.5f); // 1.5초 대기
     }
 
     private void StartNextStep()

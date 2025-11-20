@@ -1,105 +1,112 @@
+// QuestInputGenerator.cs (수정)
 using UnityEngine;
 using System.Data;
 using Mono.Data.Sqlite;
+using System.Collections.Generic;
 
 public class QuestInputGenerator : MonoBehaviour
 {
-
-    // 1. When triggered(e.g. talk to an NPC), gather context data from database)
-    public string GatherContextData(string NPCID)
+    private class NpcData
     {
-        // Placeholder for context data gathering logic
-        Debug.Log("Gathering quest context data from database...");
-        
-        string dbname = "/TestDB.db";
-        string connectionString = "URI=file:" + Application.streamingAssetsPath + dbname; //Path to database
-        IDbConnection dbConnection = new SqliteConnection(connectionString);
-        dbConnection.Open(); //Open connection to the database
+        public string id;
+        public string name;
+        public string desc;
+    }
 
-        // get NPC location info
-        string tablename = "TB_NPC";
-        
-        IDbCommand dbCommandLocation = dbConnection.CreateCommand();
-        string locationQuery = "SELECT LOCID FROM TB_NPC WHERE NPCID = '" + NPCID + "'";
-        dbCommandLocation.CommandText = locationQuery;
-        IDataReader locationReader = dbCommandLocation.ExecuteReader();
+    public string GatherContextData(string questGiverNpcId)
+    {
+        Debug.Log($"DB에서 {questGiverNpcId}를 기준으로 컨텍스트 수집 시작...");
+        string dbname = "/TestDB.db";
+        string connectionString = "URI=file:" + Application.streamingAssetsPath + dbname;
 
         string npcLocationID = "";
-        while (locationReader.Read())
-        {
-            npcLocationID = locationReader.GetString(0);
-        }
-        locationReader.Close();
-        dbCommandLocation.Dispose();
-        
-        //// get location name
-        tablename = "TB_GC";
-
-        IDbCommand dbCommandGC = dbConnection.CreateCommand();
-        string sqlQueryGC = "SELECT LOCNAME FROM " + tablename + " WHERE LOCID = '" + npcLocationID + "'";
-        dbCommandGC.CommandText = sqlQueryGC;
-        IDataReader readerGC = dbCommandGC.ExecuteReader();
-        
         string locationName = "";
-        if (readerGC.Read())
+        string dungeonID = "";
+        string objectID = "";  
+
+        using (IDbConnection dbConnection = new SqliteConnection(connectionString))
         {
-            locationName = readerGC.GetString(0);
-        }
-        readerGC.Close();
-        dbCommandGC.Dispose();
+            dbConnection.Open();
 
-        // get NPC info that in the same location(NPCID, Name, Desc)
-
-        tablename = "TB_NPC";
-        IDbCommand dbCommandNPC = dbConnection.CreateCommand();
-        string sqlQueryNPC = "SELECT NPCID, NAME, DESC " +
-        "FROM " + tablename +
-        " WHERE LOCID = '" + npcLocationID + "'";
-
-        dbCommandNPC.CommandText = sqlQueryNPC;
-        IDataReader readerNPC = dbCommandNPC.ExecuteReader();
-
-        // assign npcID, npcName, npcDesc to two-dimensional array [3, *]
-
-        string[,] npcInfo = new string[3, 10];
-        
-        int index = 0;
-        while (readerNPC.Read())
-        {
-            npcInfo[0, index] = readerNPC.GetString(0);
-            npcInfo[1, index] = readerNPC.GetString(1);
-            npcInfo[2, index] = readerNPC.GetString(2);
-            index++;
-        }
-
-        readerNPC.Close();
-        dbCommandNPC.Dispose();
-        dbConnection.Close(); //Close connection to the database
-
-        // quest giver NPC info should be the first return NPC info
-        int questgiverNPCIDindex = -1;
-        for (int i = 0; i < index; i++)
-        {
-            if (npcInfo[0, i] == NPCID)
+            // 1. 퀘스트 제공자의 LOCID 찾기
+            using (IDbCommand cmd = dbConnection.CreateCommand())
             {
-                questgiverNPCIDindex = i;
-                break;
+                cmd.CommandText = $"SELECT LOCID FROM TB_NPC WHERE NPCID = '{questGiverNpcId}'";
+                using (IDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read()) npcLocationID = reader.GetString(0);
+                }
             }
-        }
 
-        // if there are target NPCs in the same location we should return all of them
-        // For simplicity, we only return the first target NPC info along with quest giver NPC info and location info 
-        // target NPC info should be the second return NPC info
-        int targetNPCIDindex = -1;
-        for (int i = 0; i < index; i++)
-        {
-            if (npcInfo[0, i] != NPCID)
+            if (string.IsNullOrEmpty(npcLocationID))
             {
-                targetNPCIDindex = i;
-                break;
+                Debug.LogError($"DB에서 NPCID '{questGiverNpcId}'를 찾을 수 없거나 LOCID가 없습니다.");
+                return null;
             }
-        }
 
-        return $"{npcInfo[0,questgiverNPCIDindex]}, {npcInfo[1,questgiverNPCIDindex]}, {npcInfo[2,questgiverNPCIDindex]}, {npcInfo[0,targetNPCIDindex]}, {npcInfo[1,targetNPCIDindex]}, {npcInfo[2,targetNPCIDindex]}, {npcLocationID}, {locationName}";
+            // 2.LOCID로 장소 정보 (이름, 던전, 오브젝트) 찾기
+            using (IDbCommand cmd = dbConnection.CreateCommand())
+            {
+                // TB_GC에서 3개 컬럼 조회
+                cmd.CommandText = $"SELECT LOCNAME, DUNGEON, OBJECT FROM TB_GC WHERE LOCID = '{npcLocationID}'";
+                using (IDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        locationName = reader.GetString(0);
+
+                        // DB에서 NULL 값일 수 있으므로 IsDBNull로 안전하게 확인
+                        dungeonID = !reader.IsDBNull(1) ? reader.GetString(1) : "";
+                        objectID = !reader.IsDBNull(2) ? reader.GetString(2) : "";
+                    }
+                }
+            }
+
+            // 3. 같은 장소(LOCID)에 있는 모든 NPC 정보 수집
+            List<NpcData> npcsInLocation = new List<NpcData>();
+            using (IDbCommand cmd = dbConnection.CreateCommand())
+            {
+                cmd.CommandText = $"SELECT NPCID, NAME, DESC FROM TB_NPC WHERE LOCID = '{npcLocationID}'";
+                using (IDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        npcsInLocation.Add(new NpcData
+                        {
+                            id = reader.GetString(0),
+                            name = reader.GetString(1),
+                            desc = reader.GetString(2)
+                        });
+                    }
+                }
+            }
+
+            // 4. 퀘스트 제공자(NPC1)와 타겟(NPC2) 분리
+            NpcData questGiver = null;
+            NpcData targetNpc = null;
+
+            foreach (var npc in npcsInLocation)
+            {
+                if (npc.id == questGiverNpcId) questGiver = npc;
+                else if (targetNpc == null) targetNpc = npc;
+            }
+
+            // 5. 안전 검사
+            if (questGiver == null)
+            {
+                Debug.LogError($"DB 조회 오류: {questGiverNpcId} 데이터를 찾지 못했습니다.");
+                return null;
+            }
+            if (targetNpc == null)
+            {
+                Debug.LogWarning($"퀘스트 생성 경고: {questGiverNpcId}와 같은 위치에 다른 NPC가 없습니다.");
+                return null;
+            }
+
+            // 6.10개 항목의 문자열 반환
+            // (순서: NPC1(3), NPC2(3), LOC(2), DUNGEON(1), OBJECT(1))
+            Debug.Log($"DB 조회 완료: DungeonID={dungeonID}, MonsterID(Object)={objectID}");
+            return $"{questGiver.id}, {questGiver.name}, {questGiver.desc}, {targetNpc.id}, {targetNpc.name}, {targetNpc.desc}, {npcLocationID}, {locationName}, {dungeonID}, {objectID}";
+        }
     }
 }
