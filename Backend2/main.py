@@ -5,7 +5,7 @@ import vertexai
 from vertexai.generative_models import GenerativeModel, Part
 
 # --- 1. Vertex AI 설정 ---
-PROJECT_ID = "questtest-477417"  # 👈 본인의 Google Cloud Project ID
+PROJECT_ID = "questgenerator-476501"  # 👈 본인의 Google Cloud Project ID
 LOCATION = "us-central1"            # 👈 Vertex AI를 사용하는 리전
 MODEL_NAME = "gemini-2.5-pro"   # 👈 사용할 Gemini 모델
 # ---------------------------------------------
@@ -160,6 +160,9 @@ async def generate_quest(context: QuestContext): # <-- 타입 변경
         
         # 3. 응답에서 텍스트(퀘스트 JSON) 추출
         quest_json_string = response.text
+        print("--- Raw Quest Response ---")
+        print(quest_json_string)
+        print("--------------------------")
         
         if "```" in quest_json_string:
             quest_json_string = quest_json_string.split("```json")[1].split("```")[0]

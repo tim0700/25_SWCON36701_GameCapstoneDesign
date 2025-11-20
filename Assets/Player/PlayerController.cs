@@ -1,43 +1,64 @@
+using UnityEditor.Rendering.LookDev;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    // Å¸°Ù ¿·À¸·Î ÀÌµ¿ÇÒ ¶§ÀÇ °Å¸® ¿ÀÇÁ¼Â
+    // Å¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Å¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     public float offset = 1.5f;
 
     void Update()
     {
-        // ¸¶¿ì½º ¿ÞÂÊ ¹öÆ° Å¬¸¯ °¨Áö
+        // ï¿½ï¿½ï¿½ì½º ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ° Å¬ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         if (Input.GetMouseButtonDown(0))
         {
-            // ¸¶¿ì½º Å¬¸¯ À§Ä¡¸¦ ¿ùµå ÁÂÇ¥·Î º¯È¯
+            // ï¿½ï¿½ï¿½ì½º Å¬ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ç¥ï¿½ï¿½ ï¿½ï¿½È¯
             Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
-            // Å¬¸¯ÇÑ À§Ä¡¿¡ ÄÝ¶óÀÌ´õ°¡ ÀÖ´ÂÁö È®ÀÎÇÏ±â À§ÇØ Ray ¹ß»ç
+            // Å¬ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½Ý¶ï¿½ï¿½Ì´ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ï¿½ï¿½ È®ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ Ray ï¿½ß»ï¿½
             RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
 
-            // ¸¸¾à ÄÝ¶óÀÌ´õ¿¡ ¸Â¾Ò´Ù¸é (¹«¾ð°¡¸¦ Å¬¸¯Çß´Ù¸é)
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½Ý¶ï¿½ï¿½Ì´ï¿½ï¿½ï¿½ ï¿½Â¾Ò´Ù¸ï¿½ (ï¿½ï¿½ï¿½ð°¡¸ï¿½ Å¬ï¿½ï¿½ï¿½ß´Ù¸ï¿½)
             if (hit.collider != null)
             {
-                // Å¬¸¯ÇÑ ¿ÀºêÁ§Æ®¿¡¼­ CharacterInfo ÄÄÆ÷³ÍÆ®¸¦ °¡Á®¿È
+                // Å¬ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ CharacterInfo ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                 CharacterInfo targetCharacter = hit.collider.GetComponent<CharacterInfo>();
 
-                // CharacterInfo ÄÄÆ÷³ÍÆ®°¡ ÀÖ´Ù¸é (Å¸°Ù Ä³¸¯ÅÍ¸¦ Å¬¸¯Çß´Ù¸é)
+                // CharacterInfo ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ö´Ù¸ï¿½ (Å¸ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½Í¸ï¿½ Å¬ï¿½ï¿½ï¿½ß´Ù¸ï¿½)
                 if (targetCharacter != null)
                 {
-                    // Å¸°Ù Ä³¸¯ÅÍ ¿·À¸·Î ÇÃ·¹ÀÌ¾î À§Ä¡ ÀÌµ¿
-                    // Å¸°ÙÀÇ ¿À¸¥ÂÊ¿¡ ÀÚ¸®¸¦ Àâµµ·Ï À§Ä¡ ¼³Á¤
+                    // Å¸ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½Ä¡ ï¿½Ìµï¿½
+                    // Å¸ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ê¿ï¿½ ï¿½Ú¸ï¿½ï¿½ï¿½ ï¿½âµµï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
                     Vector2 targetPosition = hit.collider.transform.position;
                     transform.position = new Vector2(targetPosition.x + offset, targetPosition.y);
 
-                    // Å¸°Ù Ä³¸¯ÅÍÀÇ ID¸¦ ÄÜ¼Ö¿¡ Ãâ·Â
+                    // Å¸ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ IDï¿½ï¿½ ï¿½Ü¼Ö¿ï¿½ ï¿½ï¿½ï¿½
                     Debug.Log("Clicked Character ID: " + targetCharacter.characterID);
+
+                    // +) Send Quest Trigger Event to QuestInputGenerator(first, replace trigger with scene start)
+                    QuestInputGenerator questInputGenerator = FindFirstObjectByType<QuestInputGenerator>();
+
+                    string contextData = "";
+                    if (questInputGenerator != null)
+                    {
+                        contextData = questInputGenerator.GatherContextData(targetCharacter.characterID);
+                        Debug.Log("Gathered Context Data: " + contextData);
+                    }
+
+                    // +) Trigger Quest Request to FastAPI Server
+                    // Once quest is generated, QuestStartTester will start the quest
+                    // While generated quest is in progress, this part will be skipped until the quest is completed
+                    // 
+                    QuestRequester questRequester = FindFirstObjectByType<QuestRequester>();
+                    if (questRequester != null && questRequester.questStartTester.isQuestInProgress == false)
+                    {
+                        questRequester.OnCreateQuestButtonPressed(contextData);
+                    }
                 }
             }
-            // ÄÝ¶óÀÌ´õ¿¡ ¸ÂÁö ¾Ê¾Ò´Ù¸é (¹è°æÀ» Å¬¸¯Çß´Ù¸é)
+            // ï¿½Ý¶ï¿½ï¿½Ì´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Ò´Ù¸ï¿½ (ï¿½ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ß´Ù¸ï¿½)
             else
             {
-                // Å¬¸¯ÇÑ ¿ùµå ÁÂÇ¥·Î ÇÃ·¹ÀÌ¾î À§Ä¡¸¦ ¹Ù·Î ÀÌµ¿
+                // Å¬ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ç¥ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½Ù·ï¿½ ï¿½Ìµï¿½
                 transform.position = new Vector2(mousePosition.x, mousePosition.y);
             }
         }

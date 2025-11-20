@@ -8,6 +8,8 @@ public class QuestStartTester : MonoBehaviour
 {
     public static QuestStartTester Instance;
 
+    public bool isQuestInProgress => currentQuest != null;
+
     [Header("UI & Game Objects")]
     public TextMeshProUGUI dialogueText;
     public TextMeshProUGUI objectiveText;
@@ -21,6 +23,8 @@ public class QuestStartTester : MonoBehaviour
     private QuestData currentQuest;
     private int currentStepIndex;
 
+    public string questgiverNpcId;
+
     void Awake()
     {
         if (Instance == null) Instance = this;
@@ -31,12 +35,12 @@ public class QuestStartTester : MonoBehaviour
     {
         if (useTestJsonOnStart && !string.IsNullOrEmpty(questJsonString))
         {
-            Debug.LogWarning("--- Å×½ºÆ® ¸ðµå·Î Äù½ºÆ® ½ÃÀÛ ---");
+            Debug.LogWarning("--- ï¿½×½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ ---");
             StartQuestFromJson(questJsonString);
         }
         else
         {
-            Debug.Log("--- ¼­¹ö ´ë±â ¸ðµå·Î ½ÃÀÛ ---");
+            Debug.Log("--- ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ---");
         }
     }
 
@@ -51,7 +55,7 @@ public class QuestStartTester : MonoBehaviour
         }
         catch (System.Exception ex)
         {
-            Debug.LogError($"Äù½ºÆ® ÆÄ½Ì ¿À·ù: {ex.Message}");
+            Debug.LogError($"ï¿½ï¿½ï¿½ï¿½Æ® ï¿½Ä½ï¿½ ï¿½ï¿½ï¿½ï¿½: {ex.Message}");
         }
     }
 
@@ -59,7 +63,7 @@ public class QuestStartTester : MonoBehaviour
     {
         if (currentQuest == null || stepIndex >= currentQuest.QuestSteps.Count)
         {
-            Debug.Log("Äù½ºÆ®ÀÇ ¸ðµç ´Ü°è¸¦ ¿Ï·áÇß½À´Ï´Ù!");
+            Debug.Log("ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ü°è¸¦ ï¿½Ï·ï¿½ï¿½ß½ï¿½ï¿½Ï´ï¿½!");
             dialogueText.text = "Quest Complete!";
             objectiveText.text = "";
             currentQuest = null; 
@@ -88,7 +92,7 @@ public class QuestStartTester : MonoBehaviour
 
         bool typeMatch = false;
 
-        // 1.  objective_type ºñ±³ (GOTO, TALK, KILL, DUNGEON ¸ðµÎ Ã³¸®)
+        // 1.  objective_type ï¿½ï¿½ (GOTO, TALK, KILL, DUNGEON ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½)
         if (currentStep.ObjectiveType.ToUpper() == eventType.ToUpper())
         {
             if (eventType == "TALK")
@@ -99,11 +103,11 @@ public class QuestStartTester : MonoBehaviour
             {
                 typeMatch = (currentStep.Details.TargetLocationId == eventId);
             }
-            else if (eventType == "KILL") // ¸ó½ºÅÍ Ã³Ä¡
+            else if (eventType == "KILL") // ï¿½ï¿½ï¿½ï¿½ Ã³Ä¡
             {
                 typeMatch = (currentStep.Details.TargetMonsterId == eventId);
             }
-            else if (eventType == "DUNGEON") // ´øÀü Å¬¸®¾î
+            else if (eventType == "DUNGEON") // ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½
             {
                 typeMatch = (currentStep.Details.TargetDungeonId == eventId);
             }
@@ -111,50 +115,50 @@ public class QuestStartTester : MonoBehaviour
 
         if (typeMatch)
         {
-            // 2.  ¿Ï·á ·Î±×¸¦ Å¸ÀÔ¿¡ ¸Â°Ô º¯°æ
+            // 2.  ï¿½Ï·ï¿½ ï¿½Î±×¸ï¿½ Å¸ï¿½Ô¿ï¿½ ï¿½Â°ï¿½ ï¿½ï¿½ï¿½ï¿½
             if (eventType == "KILL")
             {
-                Debug.Log($"¸ñÇ¥ ´Þ¼º: ¸ó½ºÅÍ '{eventId}'¸¦ Ã³Ä¡Çß½À´Ï´Ù.");
+                Debug.Log($"ï¿½ï¿½Ç¥ ï¿½Þ¼ï¿½: ï¿½ï¿½ï¿½ï¿½ '{eventId}'ï¿½ï¿½ Ã³Ä¡ï¿½ß½ï¿½ï¿½Ï´ï¿½.");
             }
             else if (eventType == "DUNGEON")
             {
-                Debug.Log($"¸ñÇ¥ ´Þ¼º: ´øÀü '{eventId}'¸¦ Å¬¸®¾îÇß½À´Ï´Ù.");
+                Debug.Log($"ï¿½ï¿½Ç¥ ï¿½Þ¼ï¿½: ï¿½ï¿½ï¿½ï¿½ '{eventId}'ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ß½ï¿½ï¿½Ï´ï¿½.");
             }
             else
             {
-                Debug.Log($"¸ñÇ¥ ´Þ¼º: {eventType} - {eventId}");
+                Debug.Log($"ï¿½ï¿½Ç¥ ï¿½Þ¼ï¿½: {eventType} - {eventId}");
             }
 
             CompleteStep(currentStepIndex);
         }
         else
         {
-            // 3. ¿À·ù ¸Þ½ÃÁö »ó¼¼È­
+            // 3. ï¿½ï¿½ï¿½ï¿½ ï¿½Þ½ï¿½ï¿½ï¿½ ï¿½ï¿½È­
             string requiredDetail = "ID_UNKNOWN";
             if (currentStep.ObjectiveType == "TALK") requiredDetail = currentStep.Details.TargetNpcId;
             else if (currentStep.ObjectiveType == "GOTO") requiredDetail = currentStep.Details.TargetLocationId;
             else if (currentStep.ObjectiveType == "KILL") requiredDetail = currentStep.Details.TargetMonsterId;
             else if (currentStep.ObjectiveType == "DUNGEON") requiredDetail = currentStep.Details.TargetDungeonId;
 
-            Debug.Log($"Àß¸øµÈ Å¬¸¯: (ÇÊ¿ä: {currentStep.ObjectiveType} - {requiredDetail}), (Å¬¸¯: {eventType} - {eventId})");
+            Debug.Log($"ï¿½ß¸ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½: (ï¿½Ê¿ï¿½: {currentStep.ObjectiveType} - {requiredDetail}), (Å¬ï¿½ï¿½: {eventType} - {eventId})");
         }
     }
-    // ÇöÀç ´Ü°è¸¦ ¿Ï·áÇÏ°í ´ÙÀ½ ´Ü°è·Î ³Ñ¾î°¡´Â ÇÔ¼ö
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Ü°è¸¦ ï¿½Ï·ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ü°ï¿½ï¿½ ï¿½Ñ¾î°¡ï¿½ï¿½ ï¿½Ô¼ï¿½
     private void CompleteStep(int stepIndex)
     {
         QuestStep step = currentQuest.QuestSteps[stepIndex];
 
-        // 1. GOTO Å¸ÀÔÀÎ °æ¿ì, on_complete ´ë»ç Ãâ·Â
+        // 1. GOTO Å¸ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½, on_complete ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
         if (step.ObjectiveType == "GOTO" && step.Dialogues.OnComplete.Count > 0)
         {
             dialogueText.text = $"[{step.Dialogues.OnComplete[0].SpeakerId}]: {step.Dialogues.OnComplete[0].Line}";
         }
 
-        // 2. ´ÙÀ½ ´Ü°è·Î ÀÎµ¦½º Áõ°¡
+        // 2. ï¿½ï¿½ï¿½ï¿½ ï¿½Ü°ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         currentStepIndex++;
 
-        // 3. (Àá½Ã ´ë±â ÈÄ) ´ÙÀ½ ´Ü°è ½ÃÀÛ
-        Invoke("StartNextStep", 1.5f); // 1.5ÃÊ ´ë±â
+        // 3. (ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½) ï¿½ï¿½ï¿½ï¿½ ï¿½Ü°ï¿½ ï¿½ï¿½ï¿½ï¿½
+        Invoke("StartNextStep", 1.5f); // 1.5ï¿½ï¿½ ï¿½ï¿½ï¿½
     }
 
     private void StartNextStep()
