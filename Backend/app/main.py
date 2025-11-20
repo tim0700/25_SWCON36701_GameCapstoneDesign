@@ -11,11 +11,11 @@ from app.api.middleware import register_exception_handlers
 from app.api.routes import character
 from app.config import settings
 from app.core.logger import get_logger, setup_logging
+from app.database import InsertCharacterSheetinDatabase
 
 # Initialize logging
 setup_logging(log_level=settings.log_level)
 logger = get_logger(__name__)
-
 
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application.
@@ -82,6 +82,7 @@ def create_app() -> FastAPI:
             logger.error(f"✗ Template validation failed: {str(e)}")
             logger.warning("Application started but template issues detected")
 
+    
     # Shutdown event
     @app.on_event("shutdown")
     async def shutdown_event():
@@ -120,3 +121,5 @@ if __name__ == "__main__":
         reload=settings.debug,
         log_level=settings.log_level.lower()
     )
+
+    
