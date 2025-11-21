@@ -5,6 +5,7 @@ import vertexai
 from vertexai.generative_models import GenerativeModel, Part
 import json
 import re
+import time 
 
 # --- 1. Vertex AI 설정 ---
 PROJECT_ID = "questtest-477417"  # 👈 본인의 Google Cloud Project ID
@@ -30,7 +31,7 @@ class QuestContext(BaseModel):
 # --- 3. 퀘스트 생성을 위한 프롬프트 템플릿 ---
 QUEST_JSON_FORMAT_EXAMPLE = """
 {
-  "quest_title": "Example: Clear the Ruins",
+"quest_title": "Example: Clear the Ruins",
   "quest_giver_npc_id": "NPC_ID_1",
   "quest_type": "SIDE_QUEST",
   "quest_summary": "A quest to clear out monsters and investigate a dungeon.",
@@ -67,72 +68,70 @@ QUEST_JSON_FORMAT_EXAMPLE = """
     }
   ],
   "quest_rewards": []
+  },
+  "memory_data": {
+    "npc_id": "NPC_ID_1",
+    "content": "Quest requested by NPC_ID_1 (Name) to Player. Task: Go to LOCATION_ID_1 (Name). Goal: Clear monsters. Status: Started."
+  }
 }
 """
 
-# LLM 오류 보정 함수들
+# --- 4. 기억 저장 모듈 (아직 만들지 않은 파일 시뮬레이션) ---
+def save_memory_log(memory_json: dict):
+    """
+    생성된 기억 데이터를 처리하는 함수입니다.
+    추후 DB 저장이나 다른 백엔드로 전송하는 로직이 이곳에 들어갑니다.
+    """
+    # 타임스탬프 추가 (float)
+    memory_json["timestamp"] = time.time()
+    
+    print(f"\n[Memory Log] Saving to backend...")
+    print(f" - NPC ID: {memory_json.get('npc_id')}")
+    print(f" - Content (Vector Optimized): {memory_json.get('content')}")
+    print(f" - Timestamp: {memory_json['timestamp']}")
+    
 
-# Gemini 호출 헬퍼 함수
+    # 예: save_to_vector_db(memory_json)
+    
+    return True
+
+# --- 5. LLM 오류 보정 함수들 ---
+
 async def call_gemini_async(prompt_text: str) -> str:
     model = GenerativeModel(MODEL_NAME)
     response = await model.generate_content_async([Part.from_text(prompt_text)])
-    
     quest_json_string = response.text
-    
-    # 마크다운(` ```json ... ``` `) 제거
     if "```json" in quest_json_string:
         quest_json_string = quest_json_string.split("```json")[1].split("```")[0]
     elif "```" in quest_json_string:
          quest_json_string = quest_json_string.split("```")[1].split("```")[0]
-         
     return quest_json_string.strip()
 
-# Python 오류 보정 함수 
 def fix_common_json_errors(json_str: str, context: QuestContext) -> str:
-    
+    """JSON 문자열 내의 흔한 오류(대사 포맷 등)를 정규식으로 보정합니다."""
     corrected_str = json_str
-    
     try:
-        # 오류 1: "on_start": [ "대사" ] -> [ {"speaker_id": ..., "line": ...} ]
-        # ([\s\S]*?는 줄바꿈을 포함한 모든 문자를 찾습니다)
+        # "on_start": [ "대사" ] 패턴 보정
         pattern = r'("on_start"\s*:\s*\[\s*)"([\s\S]*?)"(\s*\])'
-        
-        # 보정: speaker_id를 퀘스트 제공자(npc1)로 우선 지정
         replacement = f'\\1{{"speaker_id": "{context.npc1_id}", "line": "\\2"}}\\3'
         corrected_str = re.sub(pattern, replacement, corrected_str, flags=re.IGNORECASE)
-        
-        # 추후 오류에 따라 보강
-
     except Exception as e:
-        print(f"JSON 보정 중 오류 발생: {e}")
-        return json_str # 보정 실패 시 원본 반환
-        
+        print(f"JSON 보정 중 오류: {e}")
+        return json_str
     return corrected_str
 
-# 재시도 프롬프트 생성 함수
 def create_retry_prompt(original_prompt: str, bad_json: str, error_message: str) -> str:
     return f"""
-    Your previous attempt to generate a JSON failed with a parsing error.
-    
-    ERROR MESSAGE:
-    {error_message}
-    
-    FAILED JSON (This is what you generated):
-    {bad_json}
-    
-    Please correct your mistake and regenerate the JSON exactly according to the original instructions.
-    Do NOT include any text other than the raw JSON object.
-    
-    ORIGINAL INSTRUCTIONS:
-    {original_prompt}
+    Your previous JSON generation failed. Error: {error_message}
+    Failed JSON: {bad_json}
+    Please correct the JSON structure. 
+    Ensure you generate a ROOT object containing both "quest_data" and "memory_data".
+    Original Instructions: {original_prompt}
     """
 
 
-# --- 3. create_quest_prompt 함수 (동적 규칙 생성) ---
+# --- 6. create_quest_prompt 함수 (동적 규칙 생성) ---
 def create_quest_prompt(context: QuestContext) -> str:
-    """Unity에서 받은 퀘스트 재료로 Gemini 프롬프트를 생성합니다."""
-
-    # 재료가 있는지(빈 문자열이 아닌지) 확인하여 프롬프트 구성
     
     elements = [
         f"- Quest Giver (NPC 1): ID: {context.npc1_id}, Name: {context.npc1_name}",
@@ -141,112 +140,112 @@ def create_quest_prompt(context: QuestContext) -> str:
     ]
     
     rules = [
-        f"1.  The `quest_giver_npc_id` MUST be \"{context.npc1_id}\".",
-        f"2.  At least one \"GOTO\" step MUST use \"details\": {{\"target_location_id\": \"{context.location_id}\"}}.",
-        f"3.  At least one \"TALK\" step MUST use \"details\": {{\"target_npc_id\": \"{context.npc2_id}\"}}."
+        f"1. The `quest_giver_npc_id` inside `quest_data` MUST be \"{context.npc1_id}\".",
+        f"2. `quest_data` MUST follow the Unity quest structure rules (GOTO/TALK types).",
+        f"3. `memory_data.npc_id` MUST be \"{context.npc1_id}\"."
     ]
 
-    # --- 동적 규칙 생성 ---
-    # 몬스터 ID가 DB에 존재하면(빈 문자열이 아니면) KILL 규칙 추가
     if context.monster_id:
-        rules.append(f"4.  You MAY use a \"KILL\" objective. If you do, you MUST use \"details\": {{\"target_monster_id\": \"{context.monster_id}\"}}.")
-        elements.append(f"- Target Monster (OBJECT): ID: {context.monster_id}")
+        rules.append(f"4. `quest_data` MAY use KILL type with target_monster_id: \"{context.monster_id}\".")
+        elements.append(f"- Target Monster: ID: {context.monster_id}")
     else:
-        rules.append("4.  DO NOT use the \"KILL\" objective type, as no monster_id was provided.")
+        rules.append("4. DO NOT use KILL type.")
 
-    # 던전 ID가 DB에 존재하면(빈 문자열이 아니면) DUNGEON 규칙 추가
     if context.dungeon_id:
-        rules.append(f"5.  You MAY use a \"DUNGEON\" objective. If you do, you MUST use \"details\": {{\"target_dungeon_id\": \"{context.dungeon_id}\"}}.")
+        rules.append(f"5. `quest_data` MAY use DUNGEON type with target_dungeon_id: \"{context.dungeon_id}\".")
         elements.append(f"- Target Dungeon: ID: {context.dungeon_id}")
     else:
-        rules.append("5.  DO NOT use the \"DUNGEON\" objective type, as no dungeon_id was provided.")
-        
-    rules.append("6.  (!!!) DO NOT invent new IDs. Use ONLY the IDs provided in the 'Elements' list.")
-    rules.append("7.  All dialogue MUST be objects ( {{\"speaker_id\": \"...\", \"line\": \"...\"}} ), NOT simple strings.")
-    rules.append("8.  \"GOTO\" steps MUST have `on_complete` dialogues.")
-    rules.append("9.  \"TALK\", \"KILL\", and \"DUNGEON\" steps MUST have empty `[]` `on_complete` dialogues.")
-    rules.append("10. The response MUST be ONLY the raw JSON object. Do NOT include ```json ... ```.")
+        rules.append("5. DO NOT use DUNGEON type.")
 
     elements_str = "\n    ".join(elements)
     rules_str = "\n    ".join(rules)
 
     return f"""
-    You are a quest designer. Generate a quest JSON based ONLY on the provided elements.
+    You are a quest designer. Generate a JSON response containing TWO parts: "quest_data" and "memory_data".
 
-    *** YOU MUST USE THESE EXACT ELEMENTS ***
+    *** INPUT ELEMENTS ***
     {elements_str}
 
-    *** CRITICAL, ABSOLUTE RULES ***
+    *** CRITICAL RULES ***
     {rules_str}
-
-    JSON Format Example (FOLLOW THIS STRUCTURE PRECISELY):
-    {QUEST_JSON_FORMAT_EXAMPLE} 
+    6. The OUTPUT MUST be a single JSON object with two keys: "quest_data" and "memory_data".
+    7. "quest_data": The standard quest JSON for the game engine.
+    8. "memory_data": Information for the NPC's long-term vector memory.
     
-    Generate a creative quest linking the provided elements using ONLY these rules.
+    9. (!!!) LANGUAGE RULE: All content (Quest Title, Summary, Dialogues, Descriptions, Memory Content) MUST BE IN ENGLISH. Do NOT use Korean.
+
+    *** JSON OUTPUT FORMAT ***
+    {QUEST_JSON_FORMAT_EXAMPLE}
+
+    Generate the JSON now.
     """
-# --- 4. FastAPI 엔드포인트 생성 ---
+# --- 7. FastAPI 엔드포인트 생성 ---
 # (NpcInfo -> QuestContext로 타입 변경)
 @app.post("/generate-quest")
 async def generate_quest(context: QuestContext):
     
-    # 1. 원본 프롬프트 생성
     original_prompt = create_quest_prompt(context)
     
     try:
-        # --- 1차 시도 ---
-        print("--- 1차 퀘스트 생성 시도 ---")
-        json_string_v1 = await call_gemini_async(original_prompt)
-
-        # --- 방법 2: 1차 보정 시도 (Python Regex) ---
-        print("--- 1차 보정 시도 (Python Regex) ---")
-        fixed_json_string_v1 = fix_common_json_errors(json_string_v1, context)
+        # 1차 시도
+        print("--- 1차 생성 시도 ---")
+        raw_response = await call_gemini_async(original_prompt)
+        
+        # 보정 (Regex)
+        fixed_response = fix_common_json_errors(raw_response, context)
 
         try:
-            # --- 1차 파싱 시도 (Python 검증) ---
-            json.loads(fixed_json_string_v1) # 파싱 테스트
+            # 1. 전체 JSON 파싱
+            root_json = json.loads(fixed_json_string_v1 := fixed_response)
             
-            print("--- 1차 시도: 보정 후 파싱 성공! ---")
-            print(fixed_json_string_v1)
-            print("---------------------------------------")
-            return {"quest_json": fixed_json_string_v1} # (성공) Unity로 전송
+            # 2. 데이터 분리
+            quest_data = root_json.get("quest_data")
+            memory_data = root_json.get("memory_data")
+
+            if not quest_data or not memory_data:
+                raise ValueError("JSON must contain both 'quest_data' and 'memory_data' keys.")
+
+            # 3. 기억 데이터 처리 (타임스탬프 추가 및 저장)
+            save_memory_log(memory_data)
+
+            # 4. Unity에는 'quest_data'만 문자열로 다시 변환해서 전송
+            # (Unity는 이전과 똑같은 포맷의 문자열을 받게 됨)
+            quest_json_string = json.dumps(quest_data)
+            
+            print("--- 성공: 퀘스트는 Unity로, 기억은 저장소로 분기됨 ---")
+            return {"quest_json": quest_json_string}
 
         except Exception as e_parse1:
-            # --- 1차 파싱 실패 -> 2차 시도 (스마트 재시도) 실행 ---
-            print(f"--- 1차 파싱 실패 (오류: {e_parse1}). 2차 재시도(Smart Retry) 시작 ---")
+            # --- 실패 시 재시도 로직 (Hybrid Retry) ---
+            print(f"--- 1차 실패: {e_parse1}. 2차 재시도 ---")
+            retry_prompt = create_retry_prompt(original_prompt, raw_response, str(e_parse1))
             
-            # --- 방법 1: 오류 피드백 프롬프트 생성 ---
-            retry_prompt = create_retry_prompt(original_prompt, json_string_v1, str(e_parse1))
-            
-            # --- 2차 생성 시도 ---
-            json_string_v2 = await call_gemini_async(retry_prompt)
-            
-            # --- 방법 2: 2차 보정 시도 ---
-            print("--- 2차 보정 시도 (Python Regex) ---")
-            fixed_json_string_v2 = fix_common_json_errors(json_string_v2, context)
+            raw_response_v2 = await call_gemini_async(retry_prompt)
+            fixed_response_v2 = fix_common_json_errors(raw_response_v2, context)
             
             try:
-                # --- 2차 파싱 시도 (Python 검증) ---
-                json.loads(fixed_json_string_v2) # 파싱 테스트
+                root_json_v2 = json.loads(fixed_response_v2)
                 
-                print("--- 2차 시도: 보정 후 파싱 성공! ---")
-                print(fixed_json_string_v2)
-                print("---------------------------------")
-                return {"quest_json": fixed_json_string_v2} # (성공) Unity로 전송
+                quest_data_v2 = root_json_v2.get("quest_data")
+                memory_data_v2 = root_json_v2.get("memory_data")
+                
+                if not quest_data_v2 or not memory_data_v2:
+                    raise ValueError("Missing keys in v2.")
+
+                save_memory_log(memory_data_v2)
+                
+                quest_json_string_v2 = json.dumps(quest_data_v2)
+                return {"quest_json": quest_json_string_v2}
             
             except Exception as e_parse2:
-                # --- 최종 실패 ---
-                print(f"--- 2차 재시도도 최종 실패 (오류: {e_parse2}) ---")
-                print(f"--- 실패한 JSON: {fixed_json_string_v2} ---")
-                return {"error": f"Failed to generate valid JSON after 2 attempts: {e_parse2}"}
+                return {"error": f"Final failure: {e_parse2}"}
 
     except Exception as e_initial:
-        # (Google 403 권한 오류 등) 1차 호출 자체가 실패한 경우
-        print(f"--- 1차 생성부터 실패 (Gemini API 오류): {e_initial} ---")
         return {"error": str(e_initial)}
 
 
 
-# --- 5. 서버 실행 (테스트용) ---
+# --- 8. 서버 실행 (테스트용) ---
 if __name__ == "__main__":
     # 0.0.0.0으로 실행해야 Unity에서 localhost 또는 127.0.0.1로 접근 가능
     uvicorn.run(app, host="0.0.0.0", port=8000)
