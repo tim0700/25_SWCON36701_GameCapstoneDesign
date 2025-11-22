@@ -76,6 +76,25 @@ class Settings(BaseSettings):
         description="API version"
     )
 
+    # Google Cloud / Vertex AI Configuration (for Quest Generation)
+    vertex_project_id: str = Field(
+        default="questtest-477417",
+        description="Google Cloud project ID for Vertex AI"
+    )
+    vertex_location: str = Field(
+        default="us-central1",
+        description="Vertex AI region"
+    )
+    vertex_model_name: str = Field(
+        default="gemini-2.5-pro",
+        description="Gemini model name for quest generation"
+    )
+    google_application_credentials: str = Field(
+        default="",
+        description="Path to Google Cloud service account key file"
+    )
+
+
     # Logging
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(
         default="INFO",

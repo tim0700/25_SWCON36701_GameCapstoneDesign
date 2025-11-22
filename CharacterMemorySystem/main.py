@@ -26,6 +26,7 @@ from services.memory_manager import MemoryManager
 from utils.embeddings import EmbeddingService
 from api import memory as memory_router_module
 from api import admin as admin_router_module
+from api import quest as quest_router_module
 
 # ============================================================================
 # LOGGING CONFIGURATION
@@ -214,6 +215,15 @@ async def startup_event() -> None:
         else:
             logger.info("  Model will load on first use (preload disabled)")
 
+        # 4.5. Initialize Vertex AI for quest generation
+        logger.info("Initializing Vertex AI for quest generation...")
+        import vertexai
+        vertexai.init(
+            project=settings.vertex_project_id,
+            location=settings.vertex_location
+        )
+        logger.info(f"  Vertex AI initialized (project: {settings.vertex_project_id}, model: {settings.vertex_model_name})")
+
         # 5. Initialize recent memory service
         logger.info("Initializing Recent Memory Service...")
         recent_memory_service = RecentMemoryService(
@@ -254,6 +264,7 @@ async def startup_event() -> None:
         admin_router_module.set_memory_manager(memory_manager)
         admin_router_module.set_embedding_service(embedding_service)
         admin_router_module.set_chroma_client(chroma_client)
+        quest_router_module.set_memory_manager(memory_manager)
         logger.info("  Dependencies injected successfully")
 
         # Startup complete
@@ -318,6 +329,11 @@ app.include_router(
     tags=["Admin Operations"]
 )
 
+app.include_router(
+    quest_router_module.router,
+    tags=["Quest Generation"]
+)
+
 # ============================================================================
 # ROOT ENDPOINT
 # ============================================================================
@@ -340,6 +356,7 @@ async def root() -> Dict[str, Any]:
         },
         "endpoints": {
             "memory": "/memory",
+            "quest": "/quest",
             "admin": "/admin",
             "health": "/admin/health"
         }
