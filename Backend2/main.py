@@ -5,12 +5,18 @@ import vertexai
 from vertexai.generative_models import GenerativeModel, Part
 import json
 import re
-import time 
+import time
+import requests 
 
 # --- 1. Vertex AI 설정 ---
 PROJECT_ID = "questtest-477417"  # 👈 본인의 Google Cloud Project ID
 LOCATION = "us-central1"            # 👈 Vertex AI를 사용하는 리전
 MODEL_NAME = "gemini-2.5-pro"   # 👈 사용할 Gemini 모델
+# ---------------------------------------------
+
+# --- 2. CharacterMemorySystem 연동 설정 ---
+MEMORY_SYSTEM_URL = "http://localhost:8123"  # CharacterMemorySystem API URL
+MEMORY_SYSTEM_TIMEOUT = 5  # API 호출 타임아웃 (초)
 # ---------------------------------------------
 
 # Vertex AI 초기화
@@ -76,24 +82,74 @@ QUEST_JSON_FORMAT_EXAMPLE = """
 }
 """
 
-# --- 4. 기억 저장 모듈 (아직 만들지 않은 파일 시뮬레이션) ---
+# --- 4. 기억 저장 모듈 (CharacterMemorySystem 연동) ---
 def save_memory_log(memory_json: dict):
     """
-    생성된 기억 데이터를 처리하는 함수입니다.
-    추후 DB 저장이나 다른 백엔드로 전송하는 로직이 이곳에 들어갑니다.
+    생성된 기억 데이터를 CharacterMemorySystem에 저장합니다.
+    
+    Args:
+        memory_json: {"npc_id": str, "content": str}
+        
+    Returns:
+        bool: 저장 성공 여부
     """
-    # 타임스탬프 추가 (float)
-    memory_json["timestamp"] = time.time()
+    npc_id = memory_json.get("npc_id")
+    content = memory_json.get("content")
     
-    print(f"\n[Memory Log] Saving to backend...")
-    print(f" - NPC ID: {memory_json.get('npc_id')}")
-    print(f" - Content (Vector Optimized): {memory_json.get('content')}")
-    print(f" - Timestamp: {memory_json['timestamp']}")
+    # 데이터 검증
+    if not npc_id or not content:
+        print(f"❌ [Memory Log] Invalid data: npc_id={npc_id}, content={content}")
+        return False
     
-
-    # 예: save_to_vector_db(memory_json)
+    # CharacterMemorySystem API 요청 데이터
+    payload = {
+        "content": content,
+        "metadata": {
+            "source": "quest_generation",
+            "timestamp": time.time(),
+            "quest_giver": npc_id
+        }
+    }
     
-    return True
+    try:
+        print(f"\n[Memory Log] Saving to CharacterMemorySystem...")
+        print(f" - Target URL: {MEMORY_SYSTEM_URL}/memory/{npc_id}")
+        print(f" - NPC ID: {npc_id}")
+        print(f" - Content: {content[:50]}..." if len(content) > 50 else f" - Content: {content}")
+        
+        # CharacterMemorySystem POST 요청
+        response = requests.post(
+            f"{MEMORY_SYSTEM_URL}/memory/{npc_id}",
+            json=payload,
+            timeout=MEMORY_SYSTEM_TIMEOUT
+        )
+        
+        # 성공 응답 (201 Created)
+        if response.status_code == 201:
+            result = response.json()
+            memory_id = result.get("memory_id", "unknown")
+            print(f"✅ [Memory Log] Successfully saved (ID: {memory_id})")
+            print(f" - Stored in: {result.get('stored_in', 'recent')}")
+            print(f" - Evicted to buffer: {result.get('evicted_to_buffer', False)}")
+            return True
+        else:
+            print(f"⚠️ [Memory Log] Unexpected status code: {response.status_code}")
+            print(f" - Response: {response.text}")
+            return False
+            
+    except requests.exceptions.Timeout:
+        print(f"❌ [Memory Log] Timeout: CharacterMemorySystem not responding")
+        print(f"   Make sure CharacterMemorySystem is running on {MEMORY_SYSTEM_URL}")
+        return False
+        
+    except requests.exceptions.ConnectionError:
+        print(f"❌ [Memory Log] Connection Error: Cannot reach CharacterMemorySystem")
+        print(f"   Is the server running? Check {MEMORY_SYSTEM_URL}")
+        return False
+        
+    except Exception as e:
+        print(f"❌ [Memory Log] Unexpected error: {type(e).__name__}: {e}")
+        return False
 
 # --- 5. LLM 오류 보정 함수들 ---
 
@@ -248,4 +304,5 @@ async def generate_quest(context: QuestContext):
 # --- 8. 서버 실행 (테스트용) ---
 if __name__ == "__main__":
     # 0.0.0.0으로 실행해야 Unity에서 localhost 또는 127.0.0.1로 접근 가능
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # 포트 8001 사용 (CharacterMemorySystem이 8000 사용)
+    uvicorn.run(app, host="0.0.0.0", port=8001)
