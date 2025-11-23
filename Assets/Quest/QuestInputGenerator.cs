@@ -21,8 +21,11 @@ public class QuestInputGenerator : MonoBehaviour
 
         string npcLocationID = "";
         string locationName = "";
-        string dungeonID = "";
-        string objectID = "";  
+        // dungeon과 monster는 배열
+        string[] dungeonIDs = new string[0];
+        string[] dungeonNames = new string[0];
+        string[] monsterIDs = new string[0];
+        string[] monsterNames = new string[0];
 
         using (IDbConnection dbConnection = new SqliteConnection(connectionString))
         {
@@ -44,23 +47,36 @@ public class QuestInputGenerator : MonoBehaviour
                 return null;
             }
 
-            // 2.LOCID�� ��� ���� (�̸�, ����, ������Ʈ) ã��
+            // 2.DUNID�� ��� ���� (�̸�, ����, ������Ʈ) ã��
             using (IDbCommand cmd = dbConnection.CreateCommand())
             {
-                // LOC���� 3�� �÷� ��ȸ
+                // DUN���� 3�� �÷� ��ȸ
                 cmd.CommandText = $"SELECT DUNID, NAME FROM DUNGEON WHERE LOCID = '{npcLocationID}'";
                 using (IDataReader reader = cmd.ExecuteReader())
                 {
                     if (reader.Read())
                     {
-                        locationName = reader.GetString(0);
-
-                        // DB���� NULL ���� �� �����Ƿ� IsDBNull�� �����ϰ� Ȯ��
-                        dungeonID = !reader.IsDBNull(1) ? reader.GetString(1) : "";
-                        objectID = !reader.IsDBNull(2) ? reader.GetString(2) : "";
+                        dungeonIDs = new string[] { reader.GetString(0) };
+                        dungeonNames = new string[] { reader.GetString(1) };
                     }
                 }
             }
+
+            // 2.MONSTER
+            using (IDbCommand cmd = dbConnection.CreateCommand())
+            {
+                // MONSTER
+                cmd.CommandText = $"SELECT MONID, NAME FROM MONSTER WHERE LOCID = '{npcLocationID}'";
+                using (IDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        monsterIDs = new string[] { reader.GetString(0) };
+                        monsterNames = new string[] { reader.GetString(1) };
+                    }
+                }
+            }
+
 
             // 3. ���� ���(LOCID)�� �ִ� ��� NPC ���� ����
             List<NpcData> npcsInLocation = new List<NpcData>();
@@ -105,8 +121,8 @@ public class QuestInputGenerator : MonoBehaviour
 
             // 6.10�� �׸��� ���ڿ� ��ȯ
             // (����: NPC1(3), NPC2(3), LOC(2), DUNGEON(1), OBJECT(1))
-            Debug.Log($"DB ��ȸ �Ϸ�: DungeonID={dungeonID}, MonsterID(Object)={objectID}");
-            return $"{questGiver.id}, {questGiver.name}, {questGiver.desc}, {targetNpc.id}, {targetNpc.name}, {targetNpc.desc}, {npcLocationID}, {locationName}, {dungeonID}, {objectID}";
+            //Debug.Log($"DB ��ȸ �Ϸ�: DungeonID={dungeonID}, MonsterID(Object)={objectID}");
+            return /*$"{questGiver.id}, {questGiver.name}, {questGiver.desc}, {targetNpc.id}, {targetNpc.name}, {targetNpc.desc}, {npcLocationID}, {locationName}, {dungeonID}, {objectID}"*/"";
         }
     }
 }
