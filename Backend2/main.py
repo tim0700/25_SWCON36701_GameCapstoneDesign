@@ -7,7 +7,7 @@ import json
 import re
 
 # --- 1. Vertex AI 설정 ---
-PROJECT_ID = "questtest-477417"  # 👈 본인의 Google Cloud Project ID
+PROJECT_ID = "questgenerator-476501"  # 👈 본인의 Google Cloud Project ID
 LOCATION = "us-central1"            # 👈 Vertex AI를 사용하는 리전
 MODEL_NAME = "gemini-2.5-pro"   # 👈 사용할 Gemini 모델
 # ---------------------------------------------
