@@ -15,7 +15,7 @@ public class QuestRequester : MonoBehaviour
     public string questGiverNpcId = "npc_amber"; // "Amber"의 ID
 
     [Header("Server")]
-    private string serverUrl = "http://127.0.0.1:8001/generate-quest";  // Fixed: Changed from 8000 to 8001
+    private string serverUrl = "http://127.0.0.1:8123/quest/generate";  // Fixed: Changed from 8000 to 8001 and chage domain
     public TextMeshProUGUI buttonText;
 
     // FastAPI가 받을 데이터 구조 (player_dialogue 필드 추가)
