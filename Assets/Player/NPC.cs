@@ -1,16 +1,17 @@
 // NPC.cs
+using JetBrains.Annotations;
 using UnityEngine;
-// using TMPro; // TextMeshPro´Â QuestStartTester°¡ Á÷Á¢ Á¦¾îÇÏ¹Ç·Î ÇÊ¿ä ¾øÀ½
+// using TMPro; // TextMeshProï¿½ï¿½ QuestStartTesterï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¹Ç·ï¿½ ï¿½Ê¿ï¿½ ï¿½ï¿½ï¿½ï¿½
 
 public class NPC : MonoBehaviour
 {
-    // 1. ÀÎ½ºÆåÅÍ¿¡¼­ ¼³Á¤ÇÒ NPCÀÇ °íÀ¯ ID
+    // 1. ï¿½Î½ï¿½ï¿½ï¿½ï¿½Í¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ NPCï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ID
     public string npcId;
-    public float interactionOffset = 1.5f; // ÇÃ·¹ÀÌ¾î°¡ ¼³ À§Ä¡ (NPC ¿·)
+    public float interactionOffset = 1.5f; // ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½ï¿½ ï¿½ï¿½Ä¡ (NPC ï¿½ï¿½)
 
-    // 2. (Say ÇÔ¼ö´Â QuestStartTester°¡ Á÷Á¢ UI¸¦ Á¦¾îÇÏ¹Ç·Î »èÁ¦)
+    // 2. (Say ï¿½Ô¼ï¿½ï¿½ï¿½ QuestStartTesterï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ UIï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¹Ç·ï¿½ ï¿½ï¿½ï¿½ï¿½)
 
-    // 3. Å¬¸¯ °¨Áö¸¦ À§ÇÑ BoxCollider2D ÀÚµ¿ Ãß°¡
+    // 3. Å¬ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ BoxCollider2D ï¿½Úµï¿½ ï¿½ß°ï¿½
     void Awake()
     {
         if (GetComponent<BoxCollider2D>() == null)
@@ -18,5 +19,4 @@ public class NPC : MonoBehaviour
             gameObject.AddComponent<BoxCollider2D>();
         }
     }
-
 }
