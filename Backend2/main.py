@@ -8,33 +8,34 @@ import re
 import time
 import requests 
 
-# --- 1. Vertex AI 설정 ---
-PROJECT_ID = "questtest-477417"  # 👈 본인의 Google Cloud Project ID
-LOCATION = "us-central1"            # 👈 Vertex AI를 사용하는 리전
-MODEL_NAME = "gemini-2.5-pro"   # 👈 사용할 Gemini 모델
+# --- 1. Vertex AI ?¤ì  ---
+PROJECT_ID = "questtest-477417"  # ? ë³¸ì¸??Google Cloud Project ID
+LOCATION = "us-central1"            # ? Vertex AIë¥??¬ì©?ë ë¦¬ì 
+MODEL_NAME = "gemini-2.5-pro"   # ? ?¬ì©??Gemini ëª¨ë¸
 # ---------------------------------------------
 
-# --- 2. CharacterMemorySystem 연동 설정 ---
+# --- 2. CharacterMemorySystem ?°ë ?¤ì  ---
 MEMORY_SYSTEM_URL = "http://localhost:8123"  # CharacterMemorySystem API URL
-MEMORY_SYSTEM_TIMEOUT = 5  # API 호출 타임아웃 (초)
+MEMORY_SYSTEM_TIMEOUT = 5  # API ?¸ì¶ ??ì??(ì´?
 # ---------------------------------------------
 
-# Vertex AI 초기화
+# Vertex AI ì´ê¸°??
 vertexai.init(project=PROJECT_ID, location=LOCATION)
 
-# FastAPI 앱 생성
+# FastAPI ???ì±
 app = FastAPI()
 
-# --- 2. Unity가 보낼 데이터의 모델 정의 ---
-# (NpcInfo -> QuestContext로 이름 변경 및 필드 확장)
+# --- 2. Unityê° ë³´ë¼ ?°ì´?°ì ëª¨ë¸ ?ì ---
+# (NpcInfo -> QuestContextë¡??´ë¦ ë³ê²?ë°??ë ?ì¥)
 class QuestContext(BaseModel):
     npc1_id: str; npc1_name: str; npc1_desc: str
     npc2_id: str; npc2_name: str; npc2_desc: str
     location_id: str; location_name: str
     dungeon_id: str 
     monster_id: str
+    player_dialogue: str = " \ # NEW: Player dialogue input (optional)
 
-# --- 3. 퀘스트 생성을 위한 프롬프트 템플릿 ---
+# --- 3. ?ì¤???ì±???í ?ë¡¬?í¸ ?íë¦?---
 QUEST_JSON_FORMAT_EXAMPLE = """
 {
 "quest_title": "Example: Clear the Ruins",
@@ -82,26 +83,26 @@ QUEST_JSON_FORMAT_EXAMPLE = """
 }
 """
 
-# --- 4. 기억 저장 모듈 (CharacterMemorySystem 연동) ---
+# --- 4. ê¸°ìµ ???ëª¨ë (CharacterMemorySystem ?°ë) ---
 def save_memory_log(memory_json: dict):
     """
-    생성된 기억 데이터를 CharacterMemorySystem에 저장합니다.
+    ?ì±??ê¸°ìµ ?°ì´?°ë? CharacterMemorySystem????¥í©?ë¤.
     
     Args:
         memory_json: {"npc_id": str, "content": str}
         
     Returns:
-        bool: 저장 성공 여부
+        bool: ????±ê³µ ?¬ë?
     """
     npc_id = memory_json.get("npc_id")
     content = memory_json.get("content")
     
-    # 데이터 검증
+    # ?°ì´??ê²ì¦?
     if not npc_id or not content:
-        print(f"❌ [Memory Log] Invalid data: npc_id={npc_id}, content={content}")
+        print(f"??[Memory Log] Invalid data: npc_id={npc_id}, content={content}")
         return False
     
-    # CharacterMemorySystem API 요청 데이터
+    # CharacterMemorySystem API ?ì²­ ?°ì´??
     payload = {
         "content": content,
         "metadata": {
@@ -117,41 +118,41 @@ def save_memory_log(memory_json: dict):
         print(f" - NPC ID: {npc_id}")
         print(f" - Content: {content[:50]}..." if len(content) > 50 else f" - Content: {content}")
         
-        # CharacterMemorySystem POST 요청
+        # CharacterMemorySystem POST ?ì²­
         response = requests.post(
             f"{MEMORY_SYSTEM_URL}/memory/{npc_id}",
             json=payload,
             timeout=MEMORY_SYSTEM_TIMEOUT
         )
         
-        # 성공 응답 (201 Created)
+        # ?±ê³µ ?ëµ (201 Created)
         if response.status_code == 201:
             result = response.json()
             memory_id = result.get("memory_id", "unknown")
-            print(f"✅ [Memory Log] Successfully saved (ID: {memory_id})")
+            print(f"??[Memory Log] Successfully saved (ID: {memory_id})")
             print(f" - Stored in: {result.get('stored_in', 'recent')}")
             print(f" - Evicted to buffer: {result.get('evicted_to_buffer', False)}")
             return True
         else:
-            print(f"⚠️ [Memory Log] Unexpected status code: {response.status_code}")
+            print(f"? ï¸ [Memory Log] Unexpected status code: {response.status_code}")
             print(f" - Response: {response.text}")
             return False
             
     except requests.exceptions.Timeout:
-        print(f"❌ [Memory Log] Timeout: CharacterMemorySystem not responding")
+        print(f"??[Memory Log] Timeout: CharacterMemorySystem not responding")
         print(f"   Make sure CharacterMemorySystem is running on {MEMORY_SYSTEM_URL}")
         return False
         
     except requests.exceptions.ConnectionError:
-        print(f"❌ [Memory Log] Connection Error: Cannot reach CharacterMemorySystem")
+        print(f"??[Memory Log] Connection Error: Cannot reach CharacterMemorySystem")
         print(f"   Is the server running? Check {MEMORY_SYSTEM_URL}")
         return False
         
     except Exception as e:
-        print(f"❌ [Memory Log] Unexpected error: {type(e).__name__}: {e}")
+        print(f"??[Memory Log] Unexpected error: {type(e).__name__}: {e}")
         return False
 
-# --- 5. LLM 오류 보정 함수들 ---
+# --- 5. LLM ?¤ë¥ ë³´ì  ?¨ì??---
 
 async def call_gemini_async(prompt_text: str) -> str:
     model = GenerativeModel(MODEL_NAME)
@@ -164,15 +165,15 @@ async def call_gemini_async(prompt_text: str) -> str:
     return quest_json_string.strip()
 
 def fix_common_json_errors(json_str: str, context: QuestContext) -> str:
-    """JSON 문자열 내의 흔한 오류(대사 포맷 등)를 정규식으로 보정합니다."""
+    """JSON ë¬¸ì???´ì ?í ?¤ë¥(????¬ë§· ??ë¥??ê·?ì¼ë¡?ë³´ì ?©ë??"""
     corrected_str = json_str
     try:
-        # "on_start": [ "대사" ] 패턴 보정
+        # "on_start": [ "??? ] ?¨í´ ë³´ì 
         pattern = r'("on_start"\s*:\s*\[\s*)"([\s\S]*?)"(\s*\])'
         replacement = f'\\1{{"speaker_id": "{context.npc1_id}", "line": "\\2"}}\\3'
         corrected_str = re.sub(pattern, replacement, corrected_str, flags=re.IGNORECASE)
     except Exception as e:
-        print(f"JSON 보정 중 오류: {e}")
+        print(f"JSON ë³´ì  ì¤??¤ë¥: {e}")
         return json_str
     return corrected_str
 
@@ -186,7 +187,7 @@ def create_retry_prompt(original_prompt: str, bad_json: str, error_message: str)
     """
 
 
-# --- 6. create_quest_prompt 함수 (동적 규칙 생성) ---
+# --- 6. create_quest_prompt ?¨ì (?ì  ê·ì¹ ?ì±) ---
 def create_quest_prompt(context: QuestContext) -> str:
     
     elements = [
@@ -194,6 +195,17 @@ def create_quest_prompt(context: QuestContext) -> str:
         f"- Target NPC (NPC 2): ID: {context.npc2_id}, Name: {context.npc2_name}",
         f"- Target Location: ID: {context.location_id}, Name: {context.location_name}"
     ]
+    
+    # NEW: Add player request section if dialogue is provided
+    player_request_section = ""
+    if context.player_dialogue and context.player_dialogue.strip():
+        player_request_section = f"""
+    *** PLAYER REQUEST ***
+    The player specifically said to {context.npc1_name}: "{context.player_dialogue}"
+    
+    CRITICAL: The generated quest MUST incorporate this player request as the primary objective.
+    Make the quest about fulfilling what the player asked for, while using the available game elements below.
+    """
     
     rules = [
         f"1. The `quest_giver_npc_id` inside `quest_data` MUST be \"{context.npc1_id}\".",
@@ -218,7 +230,7 @@ def create_quest_prompt(context: QuestContext) -> str:
 
     return f"""
     You are a quest designer. Generate a JSON response containing TWO parts: "quest_data" and "memory_data".
-
+    {player_request_section}
     *** INPUT ELEMENTS ***
     {elements_str}
 
@@ -235,45 +247,45 @@ def create_quest_prompt(context: QuestContext) -> str:
 
     Generate the JSON now.
     """
-# --- 7. FastAPI 엔드포인트 생성 ---
-# (NpcInfo -> QuestContext로 타입 변경)
+# --- 7. FastAPI ?ë?¬ì¸???ì± ---
+# (NpcInfo -> QuestContextë¡????ë³ê²?
 @app.post("/generate-quest")
 async def generate_quest(context: QuestContext):
     
     original_prompt = create_quest_prompt(context)
     
     try:
-        # 1차 시도
-        print("--- 1차 생성 시도 ---")
+        # 1ì°??ë
+        print("--- 1ì°??ì± ?ë ---")
         raw_response = await call_gemini_async(original_prompt)
         
-        # 보정 (Regex)
+        # ë³´ì  (Regex)
         fixed_response = fix_common_json_errors(raw_response, context)
 
         try:
-            # 1. 전체 JSON 파싱
+            # 1. ?ì²´ JSON ?ì±
             root_json = json.loads(fixed_json_string_v1 := fixed_response)
             
-            # 2. 데이터 분리
+            # 2. ?°ì´??ë¶ë¦¬
             quest_data = root_json.get("quest_data")
             memory_data = root_json.get("memory_data")
 
             if not quest_data or not memory_data:
                 raise ValueError("JSON must contain both 'quest_data' and 'memory_data' keys.")
 
-            # 3. 기억 데이터 처리 (타임스탬프 추가 및 저장)
+            # 3. ê¸°ìµ ?°ì´??ì²ë¦¬ (??ì¤?¬í ì¶ê? ë°????
             save_memory_log(memory_data)
 
-            # 4. Unity에는 'quest_data'만 문자열로 다시 변환해서 전송
-            # (Unity는 이전과 똑같은 포맷의 문자열을 받게 됨)
+            # 4. Unity?ë 'quest_data'ë§?ë¬¸ì?´ë¡ ?¤ì ë³?í´???ì¡
+            # (Unity???´ì ê³??ê°? ?¬ë§·??ë¬¸ì?´ì ë°ê² ??
             quest_json_string = json.dumps(quest_data)
             
-            print("--- 성공: 퀘스트는 Unity로, 기억은 저장소로 분기됨 ---")
+            print("--- ?±ê³µ: ?ì¤?¸ë Unityë¡? ê¸°ìµ? ??¥ìë¡?ë¶ê¸°??---")
             return {"quest_json": quest_json_string}
 
         except Exception as e_parse1:
-            # --- 실패 시 재시도 로직 (Hybrid Retry) ---
-            print(f"--- 1차 실패: {e_parse1}. 2차 재시도 ---")
+            # --- ?¤í¨ ???¬ì??ë¡ì§ (Hybrid Retry) ---
+            print(f"--- 1ì°??¤í¨: {e_parse1}. 2ì°??¬ì??---")
             retry_prompt = create_retry_prompt(original_prompt, raw_response, str(e_parse1))
             
             raw_response_v2 = await call_gemini_async(retry_prompt)
@@ -301,8 +313,8 @@ async def generate_quest(context: QuestContext):
 
 
 
-# --- 8. 서버 실행 (테스트용) ---
+# --- 8. ?ë² ?¤í (?ì¤?¸ì©) ---
 if __name__ == "__main__":
-    # 0.0.0.0으로 실행해야 Unity에서 localhost 또는 127.0.0.1로 접근 가능
-    # 포트 8001 사용 (CharacterMemorySystem이 8000 사용)
+    # 0.0.0.0?¼ë¡ ?¤í?´ì¼ Unity?ì localhost ?ë 127.0.0.1ë¡??ê·¼ ê°??
+    # ?¬í¸ 8001 ?¬ì© (CharacterMemorySystem??8000 ?¬ì©)
     uvicorn.run(app, host="0.0.0.0", port=8001)
