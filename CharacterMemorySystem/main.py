@@ -26,6 +26,7 @@ from services.memory_manager import MemoryManager
 from utils.embeddings import EmbeddingService
 from api import memory as memory_router_module
 from api import admin as admin_router_module
+from api import quest as quest_router_module  # NEW: Quest generation
 
 # ============================================================================
 # LOGGING CONFIGURATION
@@ -254,6 +255,7 @@ async def startup_event() -> None:
         admin_router_module.set_memory_manager(memory_manager)
         admin_router_module.set_embedding_service(embedding_service)
         admin_router_module.set_chroma_client(chroma_client)
+        quest_router_module.set_memory_manager(memory_manager)  # NEW: Quest generation
         logger.info("  Dependencies injected successfully")
 
         # Startup complete
@@ -316,6 +318,11 @@ app.include_router(
 app.include_router(
     admin_router_module.router,
     tags=["Admin Operations"]
+)
+
+app.include_router(
+    quest_router_module.router,  # NEW: Quest generation
+    tags=["Quest Generation"]
 )
 
 # ============================================================================

@@ -76,6 +76,36 @@ class Settings(BaseSettings):
         description="API version"
     )
 
+    # Quest Generation Configuration (NEW - Backend2 Integration)
+    google_cloud_project: str = Field(
+        default="questtest-477417",
+        description="Google Cloud Project ID"
+    )
+    google_cloud_location: str = Field(
+        default="us-central1",
+        description="Google Cloud region for Vertex AI"
+    )
+    google_application_credentials: str = Field(
+        default="my-service-account-key.json",
+        description="Path to service account JSON key file"
+    )
+    gemini_model: str = Field(
+        default="gemini-2.5-pro",
+        description="Gemini model for quest generation"
+    )
+    quest_temperature: float = Field(
+        default=0.7,
+        description="Temperature for quest generation (0.0-1.0)"
+    )
+    quest_max_output_tokens: int = Field(
+        default=8192,
+        description="Maximum output tokens for quest generation"
+    )
+    quest_generation_enabled: bool = Field(
+        default=True,
+        description="Enable quest generation functionality"
+    )
+
     # Logging
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(
         default="INFO",
