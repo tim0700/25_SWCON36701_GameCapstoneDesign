@@ -1,12 +1,22 @@
+using System.Collections;
+using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.Assertions.Must;
+using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
     public float offset = 1.5f;
-
     private QuestRequester questRequester;
     private QuestStartTester questStartTester;
 
+    private PlayerInputHandler inputHandler;
+
+    void Awake()
+    {
+        inputHandler = FindFirstObjectByType<PlayerInputHandler>();   
+    }
     void Start()
     {
         questRequester = FindFirstObjectByType<QuestRequester>();
@@ -39,6 +49,14 @@ public class PlayerController : MonoBehaviour
                 }
 
                 // (만약 CharacterInfo를 꼭 써야 한다면 GetComponent<NPC>() 대신 사용)
+                
+                // 3. 포탈을 클릭했는지 확인
+                Portal targetPortal = hit.collider.GetComponent<Portal>();
+                if (targetPortal != null)
+                {
+                    HandlePortalClick(targetPortal);
+                    return; // 포탈 클릭 처리 완료
+                }
             }
             else
             {
@@ -66,8 +84,7 @@ public class PlayerController : MonoBehaviour
         {
             // --- 퀘스트가 없을 때 (새 퀘스트 생성 시도) ---
             // QuestRequester에게 이 NPC ID로 퀘스트 생성을 요청합니다.
-            Debug.Log($"[PlayerController] 새 퀘스트 생성 요청: {target.npcId}");
-            questRequester.OnCreateQuestButtonPressed(target.npcId);
+            StartCoroutine(WaitForInputCompletion(target));
         }
     }
 
@@ -85,5 +102,32 @@ public class PlayerController : MonoBehaviour
             Debug.Log($"[PlayerController] 퀘스트 이벤트 알림: {eventType} {entityId}");
             QuestStartTester.Instance.NotifyEvent(eventType, entityId);
         }
+    }
+
+    void HandlePortalClick(Portal portal)
+    {
+        // 플레이어를 포탈로 이동
+        transform.position = portal.transform.position;
+        
+        // Portal에 연결된 장소로 이동 처리
+        // 카메라와 플레이어 위치를 새로운 location으로 옮김
+        Debug.Log($"[PlayerController] 포탈 이동: {portal.linkedLocation.name}");
+        Vector2 targetPosition = portal.linkedLocation.transform.position;
+        Camera.main.transform.position = new Vector3(targetPosition.x, targetPosition.y, Camera.main.transform.position.z);
+        transform.position = new Vector3(targetPosition.x, targetPosition.y, transform.position.z);
+    }
+
+    private IEnumerator WaitForInputCompletion(NPC target)
+    {
+        inputHandler.StartPlayerInput();
+
+        yield return new WaitUntil(() => !inputHandler.IsInputting);
+
+        // 입력이 완료된 후 처리
+        string playerInput = inputHandler.GetLastInput;
+        Debug.Log($"플레이어 입력 완료: {playerInput}");
+
+        Debug.Log($"[PlayerController] 새 퀘스트 생성 요청: {target.npcId}");
+        questRequester.OnCreateQuestButtonPressed(target.npcId);
     }
 }

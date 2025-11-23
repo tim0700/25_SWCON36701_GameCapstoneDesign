@@ -1,4 +1,4 @@
-// QuestInputGenerator.cs (¼öÁ¤)
+// QuestInputGenerator.cs (ï¿½ï¿½ï¿½ï¿½)
 using UnityEngine;
 using System.Data;
 using Mono.Data.Sqlite;
@@ -15,23 +15,26 @@ public class QuestInputGenerator : MonoBehaviour
 
     public string GatherContextData(string questGiverNpcId)
     {
-        Debug.Log($"DB¿¡¼­ {questGiverNpcId}¸¦ ±âÁØÀ¸·Î ÄÁÅØ½ºÆ® ¼öÁý ½ÃÀÛ...");
-        string dbname = "/TestDB.db";
+        Debug.Log($"DBï¿½ï¿½ï¿½ï¿½ {questGiverNpcId}ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ø½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½...");
+        string dbname = "/StaticDB.db";
         string connectionString = "URI=file:" + Application.streamingAssetsPath + dbname;
 
         string npcLocationID = "";
         string locationName = "";
-        string dungeonID = "";
-        string objectID = "";  
+        // dungeonê³¼ monsterëŠ” ë°°ì—´
+        string[] dungeonIDs = new string[0];
+        string[] dungeonNames = new string[0];
+        string[] monsterIDs = new string[0];
+        string[] monsterNames = new string[0];
 
         using (IDbConnection dbConnection = new SqliteConnection(connectionString))
         {
             dbConnection.Open();
 
-            // 1. Äù½ºÆ® Á¦°øÀÚÀÇ LOCID Ã£±â
+            // 1. ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ LOCID Ã£ï¿½ï¿½
             using (IDbCommand cmd = dbConnection.CreateCommand())
             {
-                cmd.CommandText = $"SELECT LOCID FROM TB_NPC WHERE NPCID = '{questGiverNpcId}'";
+                cmd.CommandText = $"SELECT LOCID FROM NPC WHERE NPCID = '{questGiverNpcId}'";
                 using (IDataReader reader = cmd.ExecuteReader())
                 {
                     if (reader.Read()) npcLocationID = reader.GetString(0);
@@ -40,29 +43,42 @@ public class QuestInputGenerator : MonoBehaviour
 
             if (string.IsNullOrEmpty(npcLocationID))
             {
-                Debug.LogError($"DB¿¡¼­ NPCID '{questGiverNpcId}'¸¦ Ã£À» ¼ö ¾ø°Å³ª LOCID°¡ ¾ø½À´Ï´Ù.");
+                Debug.LogError($"DBï¿½ï¿½ï¿½ï¿½ NPCID '{questGiverNpcId}'ï¿½ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Å³ï¿½ LOCIDï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.");
                 return null;
             }
 
-            // 2.LOCID·Î Àå¼Ò Á¤º¸ (ÀÌ¸§, ´øÀü, ¿ÀºêÁ§Æ®) Ã£±â
+            // 2.DUNIDï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½Ì¸ï¿½, ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®) Ã£ï¿½ï¿½
             using (IDbCommand cmd = dbConnection.CreateCommand())
             {
-                // TB_GC¿¡¼­ 3°³ ÄÃ·³ Á¶È¸
-                cmd.CommandText = $"SELECT LOCNAME, DUNGEON, OBJECT FROM TB_GC WHERE LOCID = '{npcLocationID}'";
+                // DUNï¿½ï¿½ï¿½ï¿½ 3ï¿½ï¿½ ï¿½Ã·ï¿½ ï¿½ï¿½È¸
+                cmd.CommandText = $"SELECT DUNID, NAME FROM DUNGEON WHERE LOCID = '{npcLocationID}'";
                 using (IDataReader reader = cmd.ExecuteReader())
                 {
                     if (reader.Read())
                     {
-                        locationName = reader.GetString(0);
-
-                        // DB¿¡¼­ NULL °ªÀÏ ¼ö ÀÖÀ¸¹Ç·Î IsDBNull·Î ¾ÈÀüÇÏ°Ô È®ÀÎ
-                        dungeonID = !reader.IsDBNull(1) ? reader.GetString(1) : "";
-                        objectID = !reader.IsDBNull(2) ? reader.GetString(2) : "";
+                        dungeonIDs = new string[] { reader.GetString(0) };
+                        dungeonNames = new string[] { reader.GetString(1) };
                     }
                 }
             }
 
-            // 3. °°Àº Àå¼Ò(LOCID)¿¡ ÀÖ´Â ¸ðµç NPC Á¤º¸ ¼öÁý
+            // 2.MONSTER
+            using (IDbCommand cmd = dbConnection.CreateCommand())
+            {
+                // MONSTER
+                cmd.CommandText = $"SELECT MONID, NAME FROM MONSTER WHERE LOCID = '{npcLocationID}'";
+                using (IDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        monsterIDs = new string[] { reader.GetString(0) };
+                        monsterNames = new string[] { reader.GetString(1) };
+                    }
+                }
+            }
+
+
+            // 3. ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½(LOCID)ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ NPC ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             List<NpcData> npcsInLocation = new List<NpcData>();
             using (IDbCommand cmd = dbConnection.CreateCommand())
             {
@@ -81,7 +97,7 @@ public class QuestInputGenerator : MonoBehaviour
                 }
             }
 
-            // 4. Äù½ºÆ® Á¦°øÀÚ(NPC1)¿Í Å¸°Ù(NPC2) ºÐ¸®
+            // 4. ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(NPC1)ï¿½ï¿½ Å¸ï¿½ï¿½(NPC2) ï¿½Ð¸ï¿½
             NpcData questGiver = null;
             NpcData targetNpc = null;
 
@@ -91,22 +107,22 @@ public class QuestInputGenerator : MonoBehaviour
                 else if (targetNpc == null) targetNpc = npc;
             }
 
-            // 5. ¾ÈÀü °Ë»ç
+            // 5. ï¿½ï¿½ï¿½ï¿½ ï¿½Ë»ï¿½
             if (questGiver == null)
             {
-                Debug.LogError($"DB Á¶È¸ ¿À·ù: {questGiverNpcId} µ¥ÀÌÅÍ¸¦ Ã£Áö ¸øÇß½À´Ï´Ù.");
+                Debug.LogError($"DB ï¿½ï¿½È¸ ï¿½ï¿½ï¿½ï¿½: {questGiverNpcId} ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ Ã£ï¿½ï¿½ ï¿½ï¿½ï¿½ß½ï¿½ï¿½Ï´ï¿½.");
                 return null;
             }
             if (targetNpc == null)
             {
-                Debug.LogWarning($"Äù½ºÆ® »ý¼º °æ°í: {questGiverNpcId}¿Í °°Àº À§Ä¡¿¡ ´Ù¸¥ NPC°¡ ¾ø½À´Ï´Ù.");
+                Debug.LogWarning($"ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½: {questGiverNpcId}ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½Ù¸ï¿½ NPCï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.");
                 return null;
             }
 
-            // 6.10°³ Ç×¸ñÀÇ ¹®ÀÚ¿­ ¹ÝÈ¯
-            // (¼ø¼­: NPC1(3), NPC2(3), LOC(2), DUNGEON(1), OBJECT(1))
-            Debug.Log($"DB Á¶È¸ ¿Ï·á: DungeonID={dungeonID}, MonsterID(Object)={objectID}");
-            return $"{questGiver.id}, {questGiver.name}, {questGiver.desc}, {targetNpc.id}, {targetNpc.name}, {targetNpc.desc}, {npcLocationID}, {locationName}, {dungeonID}, {objectID}";
+            // 6.10ï¿½ï¿½ ï¿½×¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ú¿ï¿½ ï¿½ï¿½È¯
+            // (ï¿½ï¿½ï¿½ï¿½: NPC1(3), NPC2(3), LOC(2), DUNGEON(1), OBJECT(1))
+            //Debug.Log($"DB ï¿½ï¿½È¸ ï¿½Ï·ï¿½: DungeonID={dungeonID}, MonsterID(Object)={objectID}");
+            return /*$"{questGiver.id}, {questGiver.name}, {questGiver.desc}, {targetNpc.id}, {targetNpc.name}, {targetNpc.desc}, {npcLocationID}, {locationName}, {dungeonID}, {objectID}"*/"";
         }
     }
 }

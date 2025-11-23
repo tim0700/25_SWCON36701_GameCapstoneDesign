@@ -18,3 +18,7 @@ numpy==1.26.4
 python-multipart==0.0.20
 aiofiles==24.1.0
 python-dotenv==1.0.1
+
+# NEW: Quest Generation with Vertex AI
+google-cloud-aiplatform>=1.38.0
+
