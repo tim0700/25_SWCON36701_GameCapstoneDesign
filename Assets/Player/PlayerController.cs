@@ -128,6 +128,7 @@ public class PlayerController : MonoBehaviour
         Debug.Log($"플레이어 입력 완료: {playerInput}");
 
         Debug.Log($"[PlayerController] 새 퀘스트 생성 요청: {target.npcId}");
+
         questRequester.OnCreateQuestButtonPressed(target.npcId);
     }
 }

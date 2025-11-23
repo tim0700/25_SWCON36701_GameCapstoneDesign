@@ -250,7 +250,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93693d00e92e7a4469198a55d457657c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  npcId: NPC001
+  npcId: NPC001_Amber
   interactionOffset: 1.5
 --- !u!212 &72219543
 SpriteRenderer:
@@ -316,7 +316,7 @@ Transform:
   m_GameObject: {fileID: 72219541}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.429, y: -0.397, z: 0}
+  m_LocalPosition: {x: -0.432, y: 0.382, z: 0}
   m_LocalScale: {x: 0.05555556, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -414,8 +414,8 @@ GameObject:
   - component: {fileID: 220910075}
   - component: {fileID: 220910074}
   m_Layer: 0
-  m_Name: loc_woods
-  m_TagString: Untagged
+  m_Name: woods
+  m_TagString: Dungeon
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -544,7 +544,7 @@ Transform:
   m_GameObject: {fileID: 220910073}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.193, y: -0.409, z: 0}
+  m_LocalPosition: {x: -0.206, y: 0.365, z: 0}
   m_LocalScale: {x: 0.05555556, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1768,8 +1768,8 @@ GameObject:
   - component: {fileID: 939411127}
   - component: {fileID: 939411126}
   m_Layer: 0
-  m_Name: dungeon
-  m_TagString: Untagged
+  m_Name: cave
+  m_TagString: Dungeon
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1897,12 +1897,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 939411125}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.13, y: 4.23, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.13111112, y: 0.367, z: 0}
+  m_LocalScale: {x: 0.05555556, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 757414326}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &949355956
 GameObject:
@@ -1931,7 +1931,7 @@ Transform:
   m_GameObject: {fileID: 949355956}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.44, y: -0.387, z: 0}
+  m_LocalPosition: {x: 0.43, y: 0.374, z: 0}
   m_LocalScale: {x: 0.05555556, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2309,7 +2309,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93693d00e92e7a4469198a55d457657c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  npcId: NPC002
+  npcId: NPC002_Aura
   interactionOffset: 1.5
 --- !u!212 &1439792069
 SpriteRenderer:
@@ -2375,7 +2375,7 @@ Transform:
   m_GameObject: {fileID: 1439792067}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.346, y: -0.399, z: 0}
+  m_LocalPosition: {x: -0.352, y: 0.383, z: 0}
   m_LocalScale: {x: 0.05555556, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2395,7 +2395,7 @@ GameObject:
   - component: {fileID: 1723000008}
   m_Layer: 0
   m_Name: goblin
-  m_TagString: Untagged
+  m_TagString: Monster
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2524,7 +2524,7 @@ Transform:
   m_GameObject: {fileID: 1723000007}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.268, y: -0.409, z: 0}
+  m_LocalPosition: {x: -0.28, y: 0.365, z: 0}
   m_LocalScale: {x: 0.05555556, y: 0.1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2711,6 +2711,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4961614850456302382, guid: 1bbd0f8734cb4294590fef16ebe46ab4, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1723000011}
+    - targetCorrespondingSourceObject: {fileID: 4961614850456302382, guid: 1bbd0f8734cb4294590fef16ebe46ab4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 939411129}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1bbd0f8734cb4294590fef16ebe46ab4, type: 3}
 --- !u!1660057539 &9223372036854775807
@@ -2722,6 +2725,5 @@ SceneRoots:
   - {fileID: 138625458}
   - {fileID: 705074063}
   - {fileID: 67471080}
-  - {fileID: 939411129}
   - {fileID: 4112670124750126889}
   - {fileID: 478093935}

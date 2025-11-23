@@ -6,123 +6,158 @@ using System.Collections.Generic;
 
 public class QuestInputGenerator : MonoBehaviour
 {
-    private class NpcData
+    public class QuestContextData
     {
-        public string id;
-        public string name;
-        public string desc;
+        public string quest_giver_npc_id;
+        public string quest_giver_npc_name;
+        public string quest_giver_npc_role;
+        public string quest_giver_npc_personality;
+        public string quest_giver_npc_speaking_style;
+        public List<string> inLocation_npc_ids;
+        public List<string> inLocation_npc_names;
+        public List<string> inLocation_npc_roles;
+        public List<string> inLocation_npc_personalities;
+        public List<string> inLocation_npc_speaking_styles;
+        public string location_id;
+        public string location_name;
+        public List<string> dungeon_ids; 
+        public List<string> dungeon_names;
+        public List<string> monster_ids;
+        public List<string> monster_names;
+        public string player_dialogue;  // NEW: Player's dialogue input
     }
 
-    public string GatherContextData(string questGiverNpcId)
+    public QuestContextData GatherContextData(string questGiverNpcId)
     {
-        Debug.Log($"DB���� {questGiverNpcId}�� �������� ���ؽ�Ʈ ���� ����...");
+        Debug.Log($"DB에서 {questGiverNpcId}의 컨텍스트 데이터 수집 중...");
         string dbname = "/StaticDB.db";
         string connectionString = "URI=file:" + Application.streamingAssetsPath + dbname;
-
-        string npcLocationID = "";
-        string locationName = "";
-        // dungeon과 monster는 배열
-        string[] dungeonIDs = new string[0];
-        string[] dungeonNames = new string[0];
-        string[] monsterIDs = new string[0];
-        string[] monsterNames = new string[0];
-
+        
         using (IDbConnection dbConnection = new SqliteConnection(connectionString))
         {
+            QuestContextData contextData = new QuestContextData();
+            
             dbConnection.Open();
 
-            // 1. ����Ʈ �������� LOCID ã��
+            // 1. 퀘스트 제공자의 LOCID 찾기
             using (IDbCommand cmd = dbConnection.CreateCommand())
             {
                 cmd.CommandText = $"SELECT LOCID FROM NPC WHERE NPCID = '{questGiverNpcId}'";
                 using (IDataReader reader = cmd.ExecuteReader())
                 {
-                    if (reader.Read()) npcLocationID = reader.GetString(0);
+                    if (reader.Read()) 
+                        contextData.location_id = reader.GetString(0);
                 }
             }
 
-            if (string.IsNullOrEmpty(npcLocationID))
+            if (string.IsNullOrEmpty(contextData.location_id))
             {
-                Debug.LogError($"DB���� NPCID '{questGiverNpcId}'�� ã�� �� ���ų� LOCID�� �����ϴ�.");
+                Debug.LogError($"DB에서 NPCID '{questGiverNpcId}'을 찾을 수 없거나 LOCID가 없습니다.");
                 return null;
             }
 
-            // 2.DUNID�� ��� ���� (�̸�, ����, ������Ʈ) ã��
+            // 위치 이름 조회
             using (IDbCommand cmd = dbConnection.CreateCommand())
             {
-                // DUN���� 3�� �÷� ��ȸ
-                cmd.CommandText = $"SELECT DUNID, NAME FROM DUNGEON WHERE LOCID = '{npcLocationID}'";
+                cmd.CommandText = $"SELECT NAME FROM LOC WHERE LOCID = '{contextData.location_id}'";
                 using (IDataReader reader = cmd.ExecuteReader())
                 {
-                    if (reader.Read())
-                    {
-                        dungeonIDs = new string[] { reader.GetString(0) };
-                        dungeonNames = new string[] { reader.GetString(1) };
-                    }
+                    if (reader.Read()) 
+                        contextData.location_name = reader.GetString(0);
                 }
             }
 
-            // 2.MONSTER
+            // 2. 던전 정보 조회 (List 사용)
             using (IDbCommand cmd = dbConnection.CreateCommand())
             {
-                // MONSTER
-                cmd.CommandText = $"SELECT MONID, NAME FROM MONSTER WHERE LOCID = '{npcLocationID}'";
-                using (IDataReader reader = cmd.ExecuteReader())
-                {
-                    if (reader.Read())
-                    {
-                        monsterIDs = new string[] { reader.GetString(0) };
-                        monsterNames = new string[] { reader.GetString(1) };
-                    }
-                }
-            }
+                List<string> dungeonIDsList = new List<string>();
+                List<string> dungeonNamesList = new List<string>();
 
-
-            // 3. ���� ���(LOCID)�� �ִ� ��� NPC ���� ����
-            List<NpcData> npcsInLocation = new List<NpcData>();
-            using (IDbCommand cmd = dbConnection.CreateCommand())
-            {
-                cmd.CommandText = $"SELECT NPCID, NAME, DESC FROM TB_NPC WHERE LOCID = '{npcLocationID}'";
+                cmd.CommandText = $"SELECT DUNID, NAME FROM DUNGEON WHERE LOCID = '{contextData.location_id}'";
                 using (IDataReader reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        npcsInLocation.Add(new NpcData
-                        {
-                            id = reader.GetString(0),
-                            name = reader.GetString(1),
-                            desc = reader.GetString(2)
-                        });
+                        dungeonIDsList.Add(reader.GetString(0));
+                        dungeonNamesList.Add(reader.GetString(1));
+                    }
+                }
+
+                // List를 배열로 변환
+                contextData.dungeon_ids = dungeonIDsList;
+                contextData.dungeon_names = dungeonNamesList;
+            }
+
+            // 3. 몬스터 정보 조회 (List 사용)
+            using (IDbCommand cmd = dbConnection.CreateCommand())
+            {
+                List<string> monsterIDsList = new List<string>();
+                List<string> monsterNamesList = new List<string>();
+
+                cmd.CommandText = $"SELECT MONID, NAME FROM MONSTER WHERE LOCID = '{contextData.location_id}'";
+                using (IDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        monsterIDsList.Add(reader.GetString(0));
+                        monsterNamesList.Add(reader.GetString(1));
+                    }
+                }
+
+                contextData.monster_ids = monsterIDsList;
+                contextData.monster_names = monsterNamesList;
+            }
+
+            // 4. 퀘스트 제공자 정보 조회
+            using (IDbCommand cmd = dbConnection.CreateCommand())
+            {
+                cmd.CommandText = $"SELECT NPCID, NAME, ROLE, PERSONALITY, SPEAKING_STYLE FROM NPC WHERE NPCID = '{questGiverNpcId}'";
+                using (IDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        contextData.quest_giver_npc_id = reader.GetString(0);
+                        contextData.quest_giver_npc_name = reader.GetString(1);
+                        contextData.quest_giver_npc_role = reader.GetString(2);
+                        contextData.quest_giver_npc_personality = reader.GetString(3);
+                        contextData.quest_giver_npc_speaking_style = reader.GetString(4);
                     }
                 }
             }
 
-            // 4. ����Ʈ ������(NPC1)�� Ÿ��(NPC2) �и�
-            NpcData questGiver = null;
-            NpcData targetNpc = null;
-
-            foreach (var npc in npcsInLocation)
+            // 5. 같은 위치의 다른 NPC 정보 조회 (List 사용)
+            using (IDbCommand cmd = dbConnection.CreateCommand())
             {
-                if (npc.id == questGiverNpcId) questGiver = npc;
-                else if (targetNpc == null) targetNpc = npc;
+                List<string> npcIDsList = new List<string>();
+                List<string> npcNamesList = new List<string>();
+                List<string> npcRolesList = new List<string>();
+                List<string> npcPersonalitiesList = new List<string>();
+                List<string> npcSpeakingStylesList = new List<string>();
+
+                cmd.CommandText = $"SELECT NPCID, NAME, ROLE, PERSONALITY, SPEAKING_STYLE FROM NPC WHERE LOCID = '{contextData.location_id}' AND NPCID != '{questGiverNpcId}'";
+                using (IDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        npcIDsList.Add(reader.GetString(0));
+                        npcNamesList.Add(reader.GetString(1));
+                        npcRolesList.Add(reader.GetString(2));
+                        npcPersonalitiesList.Add(reader.GetString(3));
+                        npcSpeakingStylesList.Add(reader.GetString(4));
+                    }
+                }
+
+                // List를 배열로 변환
+                contextData.inLocation_npc_ids = npcIDsList;
+                contextData.inLocation_npc_names = npcNamesList;
+                contextData.inLocation_npc_roles = npcRolesList;
+                contextData.inLocation_npc_personalities = npcPersonalitiesList;
+                contextData.inLocation_npc_speaking_styles = npcSpeakingStylesList;
             }
 
-            // 5. ���� �˻�
-            if (questGiver == null)
-            {
-                Debug.LogError($"DB ��ȸ ����: {questGiverNpcId} �����͸� ã�� ���߽��ϴ�.");
-                return null;
-            }
-            if (targetNpc == null)
-            {
-                Debug.LogWarning($"����Ʈ ���� ���: {questGiverNpcId}�� ���� ��ġ�� �ٸ� NPC�� �����ϴ�.");
-                return null;
-            }
-
-            // 6.10�� �׸��� ���ڿ� ��ȯ
-            // (����: NPC1(3), NPC2(3), LOC(2), DUNGEON(1), OBJECT(1))
-            //Debug.Log($"DB ��ȸ �Ϸ�: DungeonID={dungeonID}, MonsterID(Object)={objectID}");
-            return /*$"{questGiver.id}, {questGiver.name}, {questGiver.desc}, {targetNpc.id}, {targetNpc.name}, {targetNpc.desc}, {npcLocationID}, {locationName}, {dungeonID}, {objectID}"*/"";
+            Debug.Log("contextData is: " + JsonUtility.ToJson(contextData));
+            
+            return contextData;
         }
     }
 }
