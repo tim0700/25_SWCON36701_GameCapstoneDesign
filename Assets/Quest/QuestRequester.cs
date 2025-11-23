@@ -1,4 +1,4 @@
-// QuestRequester.cs (Updated with player dialogue support)
+// QuestRequester.cs (Updated with CharacterMemorySystem integration)
 using UnityEngine;
 using UnityEngine.Networking;
 using System.Collections;
@@ -9,16 +9,16 @@ public class QuestRequester : MonoBehaviour
 {
     [Header("Core Components")]
     public QuestStartTester questStartTester;
-    public QuestInputGenerator questInputGenerator; // 새로 추가 (DB 읽기 담당)
+    public QuestInputGenerator questInputGenerator;
 
     [Header("Quest Template")]
-    public string questGiverNpcId = "npc_amber"; // "Amber"의 ID
+    public string questGiverNpcId = "npc_amber";
 
     [Header("Server")]
-    private string serverUrl = "http://127.0.0.1:8123/quest/generate";  // Fixed: Changed from 8000 to 8001 and chage domain
+    private string serverUrl = "http://127.0.0.1:8123/quest/generate";
+    private string memoryServerUrl = "http://127.0.0.1:8123/memory";
     public TextMeshProUGUI buttonText;
 
-    // FastAPI가 받을 데이터 구조 (player_dialogue 필드 추가)
     [System.Serializable]
     private class QuestContextData
     {
@@ -30,15 +30,18 @@ public class QuestRequester : MonoBehaviour
         public string npc2_desc;
         public string location_id;
         public string location_name;
-        public string dungeon_id; 
+        public string dungeon_id;
         public string monster_id;
-        public string player_dialogue;  // NEW: Player's dialogue input
+        public string player_dialogue;
     }
 
     [System.Serializable]
     private class FastAPIResponse { public string quest_json; }
 
-    // 버튼 클릭 시 호출될 함수 (수정: playerDialogue 파라미터 추가)
+    // =================================================================================
+    // Public Quest Generation Method
+    // =================================================================================
+
     public void OnCreateQuestButtonPressed(string questGiverNpcId, string playerDialogue = "")
     {
         if (questInputGenerator == null)
@@ -48,7 +51,6 @@ public class QuestRequester : MonoBehaviour
             return;
         }
 
-        // 1. PlayerController에서 받은 ID로 DB 재료를 가져옴
         string contextString = questInputGenerator.GatherContextData(questGiverNpcId);
 
         if (string.IsNullOrEmpty(contextString))
@@ -58,7 +60,6 @@ public class QuestRequester : MonoBehaviour
             return;
         }
 
-        // 2. 재료 문자열 파싱
         string[] parts = contextString.Split(',');
         if (parts.Length < 10)
         {
@@ -67,7 +68,6 @@ public class QuestRequester : MonoBehaviour
             return;
         }
 
-        // 3. 서버로 보낼 객체 생성 (player_dialogue 포함)
         QuestContextData dataToSend = new QuestContextData
         {
             npc1_id = parts[0].Trim(),
@@ -78,18 +78,15 @@ public class QuestRequester : MonoBehaviour
             npc2_desc = parts[5].Trim(),
             location_id = parts[6].Trim(),
             location_name = parts[7].Trim(),
-            dungeon_id = parts[8].Trim(), 
+            dungeon_id = parts[8].Trim(),
             monster_id = parts[9].Trim(),
-            player_dialogue = playerDialogue  // NEW: Include player's dialogue
+            player_dialogue = playerDialogue
         };
 
         Debug.Log($"[QuestRequester] 퀘스트 생성 요청 시작 (NPC: {questGiverNpcId}, 대화: {(string.IsNullOrEmpty(playerDialogue) ? "(없음)" : playerDialogue)})");
-
-        // 4. 서버에 전송
         StartCoroutine(FetchQuestFromServer(dataToSend));
     }
 
-    // 코루틴은 이제 문자열이 아닌 QuestContextData 객체를 받음
     private IEnumerator FetchQuestFromServer(QuestContextData dataToSend)
     {
         string contextJson = JsonUtility.ToJson(dataToSend);
@@ -131,6 +128,102 @@ public class QuestRequester : MonoBehaviour
                 Debug.LogError($"[QuestRequester] 응답 코드: {webRequest.responseCode}");
                 if (buttonText != null) buttonText.text = "Connection Failed";
             }
+        }
+    }
+
+    // =================================================================================
+    // CharacterMemorySystem Integration
+    // =================================================================================
+
+    public IEnumerator FetchMemoriesAndCreateQuest(string npcId, string playerInput)
+    {
+        RecentMemoryResponse recentMemories = null;
+        SearchMemoryResponse searchResults = null;
+
+        yield return FetchRecentMemories(npcId, (response) => { recentMemories = response; });
+        yield return SearchMemories(npcId, playerInput, (response) => { searchResults = response; });
+
+        LogMemories(recentMemories, searchResults);
+
+        OnCreateQuestButtonPressed(npcId, playerInput);
+    }
+
+    private IEnumerator FetchRecentMemories(string npcId, System.Action<RecentMemoryResponse> callback)
+    {
+        string url = $"{memoryServerUrl}/{npcId}";
+
+        using (UnityWebRequest request = UnityWebRequest.Get(url))
+        {
+            request.timeout = 5;
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
+                    RecentMemoryResponse response = JsonUtility.FromJson<RecentMemoryResponse>(request.downloadHandler.text);
+                    callback?.Invoke(response);
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogWarning($"[QuestRequester] Recent Memory 파싱 실패: {e.Message}");
+                    callback?.Invoke(null);
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[QuestRequester] Recent Memory 조회 실패: {request.error}");
+                callback?.Invoke(null);
+            }
+        }
+    }
+
+    private IEnumerator SearchMemories(string npcId, string query, System.Action<SearchMemoryResponse> callback)
+    {
+        if (string.IsNullOrEmpty(query))
+                    SearchMemoryResponse response = JsonUtility.FromJson<SearchMemoryResponse>(request.downloadHandler.text);
+                    callback?.Invoke(response);
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogWarning($"[QuestRequester] Memory Search 파싱 실패: {e.Message}");
+                    callback?.Invoke(null);
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[QuestRequester] Memory Search 실패: {request.error}");
+                callback?.Invoke(null);
+            }
+        }
+    }
+
+    private void LogMemories(RecentMemoryResponse recent, SearchMemoryResponse search)
+    {
+        if (recent != null && recent.count > 0)
+        {
+            Debug.Log($"[QuestRequester] ========== 단기 기억 {recent.count}개 ==========");
+            foreach (var m in recent.memories)
+            {
+                Debug.Log($"  [{m.timestamp}] {m.content}");
+            }
+        }
+        else
+        {
+            Debug.Log("[QuestRequester] 단기 기억 없음");
+        }
+
+        if (search != null && search.count > 0)
+        {
+            Debug.Log($"[QuestRequester] ========== 검색 결과 {search.count}개 ==========");
+            foreach (var r in search.results)
+            {
+                Debug.Log($"  [유사도: {r.similarity_score:F2}] {r.memory.content}");
+            }
+        }
+        else
+        {
+            Debug.Log("[QuestRequester] 검색 결과 없음");
         }
     }
 }

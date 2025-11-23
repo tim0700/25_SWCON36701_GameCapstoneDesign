@@ -48,20 +48,54 @@ public class DialogueLine
 
 public class StepDetails
 {
-    // TALK Ÿ�Կ�
+    // TALK 타입용
     [JsonProperty("target_npc_id")]
     public string TargetNpcId { get; set; }
 
-    // GOTO Ÿ�Կ�
+    // GOTO 타입용
     [JsonProperty("target_location_id")]
-
     public string TargetLocationId { get; set; }
 
-    // (�߰�) KILL Ÿ�Կ�
+    // (추가) KILL 타입용
     [JsonProperty("target_monster_id")]
     public string TargetMonsterId { get; set; }
 
-    // (�߰�) DUNGEON Ÿ�Կ�
+    // (추가) DUNGEON 타입용
     [JsonProperty("target_dungeon_id")]
     public string TargetDungeonId { get; set; }
+}
+
+// ============================================================================
+// CharacterMemorySystem API Response Models
+// ============================================================================
+
+[System.Serializable]
+public class MemoryEntry
+{
+    public string id;
+    public string content;
+    public string timestamp;
+}
+
+[System.Serializable]
+public class RecentMemoryResponse
+{
+    public string status;
+    public MemoryEntry[] memories;
+    public int count;
+}
+
+[System.Serializable]
+public class SearchResult
+{
+    public MemoryEntry memory;
+    public float similarity_score;
+}
+
+[System.Serializable]
+public class SearchMemoryResponse
+{
+    public string status;
+    public SearchResult[] results;
+    public int count;
 }

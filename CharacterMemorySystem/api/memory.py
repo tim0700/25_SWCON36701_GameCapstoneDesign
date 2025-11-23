@@ -22,7 +22,9 @@ from models.responses import (
     ErrorResponse
 )
 from models.memory import MemoryEntry, SimilarMemory
+from models.memory import MemoryEntry, SimilarMemory
 from services.memory_manager import MemoryManager
+from config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -235,7 +237,7 @@ async def get_recent_memories(
 async def search_memories(
     npc_id: str = Path(..., min_length=1, description="NPC identifier"),
     query: str = Query(..., min_length=1, max_length=1000, description="Search query"),
-    top_k: int = Query(3, ge=1, le=20, description="Number of results to return"),
+    top_k: int = Query(settings.similarity_search_results, ge=1, le=20, description="Number of results to return"),
     manager: MemoryManager = Depends(get_memory_manager)
 ) -> SearchMemoryResponse:
     """
