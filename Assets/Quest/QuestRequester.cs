@@ -172,7 +172,6 @@ public class QuestRequester : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"[QuestRequester] Recent Memory 조회 실패: {request.error}");
                 callback?.Invoke(null);
             }
         }
@@ -181,6 +180,25 @@ public class QuestRequester : MonoBehaviour
     private IEnumerator SearchMemories(string npcId, string query, System.Action<SearchMemoryResponse> callback)
     {
         if (string.IsNullOrEmpty(query))
+        {
+            Debug.Log("[QuestRequester] 검색 쿼리 없음 - 검색 건너뜀");
+            callback?.Invoke(null);
+            yield break;
+        }
+
+        string escapedQuery = UnityWebRequest.EscapeURL(query);
+        // top_k 제거 - 서버의 config.py 설정(similarity_search_results)을 따름
+        string url = $"{memoryServerUrl}/{npcId}/search?query={escapedQuery}";
+
+        using (UnityWebRequest request = UnityWebRequest.Get(url))
+        {
+            request.timeout = 5; // 유저 요청대로 5초 유지
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
+            {
+                try
+                {
                     SearchMemoryResponse response = JsonUtility.FromJson<SearchMemoryResponse>(request.downloadHandler.text);
                     callback?.Invoke(response);
                 }
