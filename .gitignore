@@ -135,3 +135,4 @@ Backend/*.Zone.Identifier
 
 # Documentation build
 Backend/docs/_build/
+CharacterMemorySystem/my-service-account-key.json
