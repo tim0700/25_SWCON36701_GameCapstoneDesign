@@ -13,7 +13,7 @@ Integrated from Backend2 into CharacterMemorySystem.
 import json
 import re
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 import vertexai
 from vertexai.generative_models import GenerativeModel, Part
@@ -41,6 +41,8 @@ class QuestContext(BaseModel):
     dungeon_id: str
     monster_id: str
     player_dialogue: str = ""  # Player's dialogue input (optional)
+    recent_memories_json: Optional[str] = None
+    search_results_json: Optional[str] = None
 
 
 # ============================================================================
@@ -204,6 +206,48 @@ class QuestGeneratorService:
     Make the quest about fulfilling what the player asked for, while using the available game elements below.
     """
         
+        # Add memory section if memory data is provided
+        memory_section = ""
+        if context.recent_memories_json or context.search_results_json:
+            memory_section = """
+    *** NPC MEMORY CONTEXT ***
+    The NPC has memories of past interactions with the player. Use this information to create a quest that feels personalized and references past events.
+    """
+            
+            # Parse and add recent memories
+            if context.recent_memories_json:
+                try:
+                    recent_data = json.loads(context.recent_memories_json)
+                    if recent_data.get("memories") and len(recent_data["memories"]) > 0:
+                        memory_section += "\n    Recent Memories (Most Recent First):\n"
+                        for mem in recent_data["memories"]:
+                            timestamp = mem.get("timestamp", "Unknown time")
+                            content = mem.get("content", "")
+                            memory_section += f"    - [{timestamp}] {content}\n"
+                except (json.JSONDecodeError, KeyError, TypeError) as e:
+                    logger.warning(f"Failed to parse recent_memories_json: {e}")
+            
+            # Parse and add search results (relevant memories)
+            if context.search_results_json:
+                try:
+                    search_data = json.loads(context.search_results_json)
+                    if search_data.get("results") and len(search_data["results"]) > 0:
+                        memory_section += "\n    Relevant Past Memories (Sorted by Relevance):\n"
+                        for result in search_data["results"]:
+                            mem = result.get("memory", {})
+                            score = result.get("similarity_score", 0.0)
+                            content = mem.get("content", "")
+                            memory_section += f"    - [Similarity: {score:.2f}] {content}\n"
+                except (json.JSONDecodeError, KeyError, TypeError) as e:
+                    logger.warning(f"Failed to parse search_results_json: {e}")
+            
+            memory_section += """
+    IMPORTANT: Incorporate these memories naturally into the quest narrative. For example:
+    - Reference past events in NPC dialogues
+    - Create quests that follow up on previous interactions
+    - Reward the player for past achievements or address past failures
+    """
+        
         rules = [
             f'1. The `quest_giver_npc_id` inside `quest_data` MUST be "{context.npc1_id}".',
             f'2. `quest_data` MUST follow the Unity quest structure rules (GOTO/TALK types).',
@@ -229,6 +273,8 @@ class QuestGeneratorService:
         return f"""
     You are a quest designer. Generate a JSON response containing TWO parts: "quest_data" and "memory_data".
     {player_request_section}
+    {memory_section}
+    
     *** INPUT ELEMENTS ***
     {elements_str}
 
