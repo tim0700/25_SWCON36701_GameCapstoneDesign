@@ -127,8 +127,8 @@ public class PlayerController : MonoBehaviour
         string playerInput = inputHandler.GetLastInput;
         Debug.Log($"플레이어 입력 완료: {playerInput}");
 
-        Debug.Log($"[PlayerController] 새 퀘스트 생성 요청: {target.npcId}");
-
-        questRequester.OnCreateQuestButtonPressed(target.npcId);
+        // CharacterMemorySystem에서 메모리 조회 + 퀘스트 생성 (통합 워크플로우)
+        Debug.Log($"[PlayerController] 메모리 조회 및 퀘스트 생성 시작: {target.npcId}");
+        yield return StartCoroutine(questRequester.FetchMemoriesAndCreateQuest(target.npcId, playerInput));
     }
 }

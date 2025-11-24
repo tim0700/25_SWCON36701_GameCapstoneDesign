@@ -4,29 +4,29 @@ using System.Data;
 using Mono.Data.Sqlite;
 using System.Collections.Generic;
 
+public class QuestContextData
+{
+    public string quest_giver_npc_id;
+    public string quest_giver_npc_name;
+    public string quest_giver_npc_role;
+    public string quest_giver_npc_personality;
+    public string quest_giver_npc_speaking_style;
+    public List<string> inLocation_npc_ids;
+    public List<string> inLocation_npc_names;
+    public List<string> inLocation_npc_roles;
+    public List<string> inLocation_npc_personalities;
+    public List<string> inLocation_npc_speaking_styles;
+    public string location_id;
+    public string location_name;
+    public List<string> dungeon_ids; 
+    public List<string> dungeon_names;
+    public List<string> monster_ids;
+    public List<string> monster_names;
+    public string player_dialogue;  // NEW: Player's dialogue input
+}
 public class QuestInputGenerator : MonoBehaviour
 {
-    public class QuestContextData
-    {
-        public string quest_giver_npc_id;
-        public string quest_giver_npc_name;
-        public string quest_giver_npc_role;
-        public string quest_giver_npc_personality;
-        public string quest_giver_npc_speaking_style;
-        public List<string> inLocation_npc_ids;
-        public List<string> inLocation_npc_names;
-        public List<string> inLocation_npc_roles;
-        public List<string> inLocation_npc_personalities;
-        public List<string> inLocation_npc_speaking_styles;
-        public string location_id;
-        public string location_name;
-        public List<string> dungeon_ids; 
-        public List<string> dungeon_names;
-        public List<string> monster_ids;
-        public List<string> monster_names;
-        public string player_dialogue;  // NEW: Player's dialogue input
-    }
-
+    
     public QuestContextData GatherContextData(string questGiverNpcId)
     {
         Debug.Log($"DB에서 {questGiverNpcId}의 컨텍스트 데이터 수집 중...");
