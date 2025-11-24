@@ -195,16 +195,8 @@ class QuestGeneratorService:
             f"- Target Location: ID: {context.location_id}, Name: {context.location_name}"
         ]
         
-        # Add player request section if dialogue is provided
-        player_request_section = ""
-        if context.player_dialogue and context.player_dialogue.strip():
-            player_request_section = f"""
-    *** PLAYER REQUEST ***
-    The player specifically said to {context.npc1_name}: "{context.player_dialogue}"
-    
-    CRITICAL: The generated quest MUST incorporate this player request as the primary objective.
-    Make the quest about fulfilling what the player asked for, while using the available game elements below.
-    """
+        # NOTE: player_dialogue는 벡터 검색 쿼리로만 사용됨 (프롬프트에 직접 포함 안 함)
+        # 검색 결과는 아래 memory_section을 통해 프롬프트에 포함됨
         
         # Add memory section if memory data is provided
         memory_section = ""
@@ -272,7 +264,6 @@ class QuestGeneratorService:
         
         return f"""
     You are a quest designer. Generate a JSON response containing TWO parts: "quest_data" and "memory_data".
-    {player_request_section}
     {memory_section}
     
     *** INPUT ELEMENTS ***
