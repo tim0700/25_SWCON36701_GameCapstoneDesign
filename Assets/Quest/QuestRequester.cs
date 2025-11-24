@@ -26,12 +26,8 @@ public class QuestRequester : MonoBehaviour
     // ======================================================
     // 전송용 페이로드 정의 (context + memories 함께 전송)
     // ======================================================
-    [System.Serializable]
-    private class QuestRequestPayload
+    private class QuestRequestPayload : QuestContextData
     {
-        public QuestContextData context;
-        public string player_dialogue;
-        // 안전하게 문자열로 JSON 포함. 서버에서 다시 파싱하도록 함.
         public string recent_memories_json;
         public string search_results_json;
     }
@@ -60,14 +56,29 @@ public class QuestRequester : MonoBehaviour
         // 페이로드 생성: memories는 JSON 문자열로 포함 (서버에서 JSON.parse 필요)
         QuestRequestPayload payload = new QuestRequestPayload
         {
-            context = contextData,
-            player_dialogue = playerDialogue,
+            quest_giver_npc_id = contextData.quest_giver_npc_id,
+            quest_giver_npc_name = contextData.quest_giver_npc_name,
+            quest_giver_npc_role = contextData.quest_giver_npc_role,
+            quest_giver_npc_personality = contextData.quest_giver_npc_personality,
+            quest_giver_npc_speaking_style = contextData.quest_giver_npc_speaking_style,
+            inLocation_npc_ids = contextData.inLocation_npc_ids,
+            inLocation_npc_names = contextData.inLocation_npc_names,
+            inLocation_npc_roles = contextData.inLocation_npc_roles,
+            inLocation_npc_personalities = contextData.inLocation_npc_personalities,
+            inLocation_npc_speaking_styles = contextData.inLocation_npc_speaking_styles,
+            location_id = contextData.location_id,
+            location_name = contextData.location_name,
+            dungeon_ids = contextData.dungeon_ids,
+            dungeon_names = contextData.dungeon_names,
+            monster_ids = contextData.monster_ids,
+            monster_names = contextData.monster_names,
             recent_memories_json = recentMemories != null ? JsonUtility.ToJson(recentMemories) : null,
             search_results_json = searchResults != null ? JsonUtility.ToJson(searchResults) : null
         };
-
+        
         Debug.Log($"[QuestRequester] 퀘스트 생성 요청 시작 (NPC: {questGiverNpcId}, 대화: {(string.IsNullOrEmpty(playerDialogue) ? "(없음)" : playerDialogue)})");
-
+        Debug.Log($"[QuestRequester] 컨텍스트 데이터: {JsonUtility.ToJson(contextData, true)}");
+        Debug.Log($"[QuestRequester] 페이로드 내용: {JsonUtility.ToJson(payload, true)}");
         // FetchQuestFromServer 시 페이로드 전달
         StartCoroutine(FetchQuestFromServer(payload));
     }

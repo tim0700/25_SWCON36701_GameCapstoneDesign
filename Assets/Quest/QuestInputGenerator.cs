@@ -4,6 +4,7 @@ using System.Data;
 using Mono.Data.Sqlite;
 using System.Collections.Generic;
 
+[System.Serializable]
 public class QuestContextData
 {
     public string quest_giver_npc_id;
@@ -11,19 +12,19 @@ public class QuestContextData
     public string quest_giver_npc_role;
     public string quest_giver_npc_personality;
     public string quest_giver_npc_speaking_style;
-    public List<string> inLocation_npc_ids;
-    public List<string> inLocation_npc_names;
-    public List<string> inLocation_npc_roles;
-    public List<string> inLocation_npc_personalities;
-    public List<string> inLocation_npc_speaking_styles;
+    public string[] inLocation_npc_ids;
+    public string[] inLocation_npc_names;
+    public string[] inLocation_npc_roles;
+    public string[] inLocation_npc_personalities;
+    public string[] inLocation_npc_speaking_styles;
     public string location_id;
     public string location_name;
-    public List<string> dungeon_ids; 
-    public List<string> dungeon_names;
-    public List<string> monster_ids;
-    public List<string> monster_names;
-    public string player_dialogue;  // NEW: Player's dialogue input
+    public string[] dungeon_ids; 
+    public string[] dungeon_names;
+    public string[] monster_ids;
+    public string[] monster_names;
 }
+
 public class QuestInputGenerator : MonoBehaviour
 {
     
@@ -84,8 +85,8 @@ public class QuestInputGenerator : MonoBehaviour
                 }
 
                 // List를 배열로 변환
-                contextData.dungeon_ids = dungeonIDsList;
-                contextData.dungeon_names = dungeonNamesList;
+                contextData.dungeon_ids = dungeonIDsList.ToArray();
+                contextData.dungeon_names = dungeonNamesList.ToArray();
             }
 
             // 3. 몬스터 정보 조회 (List 사용)
@@ -104,8 +105,8 @@ public class QuestInputGenerator : MonoBehaviour
                     }
                 }
 
-                contextData.monster_ids = monsterIDsList;
-                contextData.monster_names = monsterNamesList;
+                contextData.monster_ids = monsterIDsList.ToArray();
+                contextData.monster_names = monsterNamesList.ToArray();
             }
 
             // 4. 퀘스트 제공자 정보 조회
@@ -148,11 +149,11 @@ public class QuestInputGenerator : MonoBehaviour
                 }
 
                 // List를 배열로 변환
-                contextData.inLocation_npc_ids = npcIDsList;
-                contextData.inLocation_npc_names = npcNamesList;
-                contextData.inLocation_npc_roles = npcRolesList;
-                contextData.inLocation_npc_personalities = npcPersonalitiesList;
-                contextData.inLocation_npc_speaking_styles = npcSpeakingStylesList;
+                contextData.inLocation_npc_ids = npcIDsList.ToArray();
+                contextData.inLocation_npc_names = npcNamesList.ToArray();
+                contextData.inLocation_npc_roles = npcRolesList.ToArray();
+                contextData.inLocation_npc_personalities = npcPersonalitiesList.ToArray();
+                contextData.inLocation_npc_speaking_styles = npcSpeakingStylesList.ToArray();
             }
 
             Debug.Log("contextData is: " + JsonUtility.ToJson(contextData));
