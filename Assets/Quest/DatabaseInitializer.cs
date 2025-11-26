@@ -144,6 +144,8 @@ public class DatabaseInitializer : MonoBehaviour
                     counter++;
 
                     // 한 Location에 속한 Dungeon과 Monster도 함께 삽입
+                    int duncounter = 1;
+                    int moncounter = 1;
                     for(int i = 0; i < loc.transform.childCount; i++)
                     {
                         GameObject gameObjectInLoc = loc.transform.GetChild(i).gameObject;
@@ -152,7 +154,7 @@ public class DatabaseInitializer : MonoBehaviour
                         if (gameObjectInLoc.CompareTag("Dungeon"))
                         {
                             string dunName = gameObjectInLoc.name;
-                            string dunId = $"DUN{counter:000}_{dunName}";
+                            string dunId = $"DUN{duncounter:000}_{dunName}";
 
                             cmd.CommandText = "INSERT OR REPLACE INTO DUNGEON (DUNID, NAME, LOCID) VALUES (@dunId, @dunName, @locId);";
                             cmd.Parameters.Clear();
@@ -173,12 +175,13 @@ public class DatabaseInitializer : MonoBehaviour
                             cmd.Parameters.Add(plocId);
 
                             cmd.ExecuteNonQuery();
+                            duncounter++;
                         }
                         else if (gameObjectInLoc.CompareTag("Monster"))
                         {
                             // MONSTER 삽입
                             string monName = gameObjectInLoc.name;
-                            string monId = $"MON{counter:000}_{monName}";
+                            string monId = $"MON{moncounter:000}_{monName}";
 
                             cmd.CommandText = "INSERT OR REPLACE INTO MONSTER (MONID, NAME, LOCID) VALUES (@monId, @monName, @locId);";
                             cmd.Parameters.Clear();
@@ -199,20 +202,14 @@ public class DatabaseInitializer : MonoBehaviour
                             cmd.Parameters.Add(plocId2);
 
                             cmd.ExecuteNonQuery();
+                            moncounter++;
                         }
                         
                     }
                 }
 
 
-            }
-
-                // DUNGEON 및 MONSTER 데이터 삽입
-            using (IDbCommand cmd = dbConnection.CreateCommand())
-            {
-                
-            }
-            
+            }   
         }
 
         Debug.Log("Database initialized successfully.");
