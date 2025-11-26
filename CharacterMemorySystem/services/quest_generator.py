@@ -13,7 +13,7 @@ Integrated from Backend2 into CharacterMemorySystem.
 import json
 import re
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 import vertexai
 from vertexai.generative_models import GenerativeModel, Part
@@ -30,16 +30,33 @@ logger = logging.getLogger(__name__)
 
 class QuestContext(BaseModel):
     """Quest generation context received from Unity."""
-    npc1_id: str
-    npc1_name: str
-    npc1_desc: str
-    npc2_id: str
-    npc2_name: str
-    npc2_desc: str
+    # Quest Giver NPC (NPC1)
+    quest_giver_npc_id: str
+    quest_giver_npc_name: str
+    quest_giver_npc_role: str
+    quest_giver_npc_personality: str
+    quest_giver_npc_speaking_style: str
+    
+    # NPCs in the same location (arrays)
+    inLocation_npc_ids: List[str]
+    inLocation_npc_names: List[str]
+    inLocation_npc_roles: List[str]
+    inLocation_npc_personalities: List[str]
+    inLocation_npc_speaking_styles: List[str]
+    
+    # Location info
     location_id: str
     location_name: str
-    dungeon_id: str
-    monster_id: str
+    
+    # Dungeons (arrays)
+    dungeon_ids: List[str]
+    dungeon_names: List[str]
+    
+    # Monsters (arrays)
+    monster_ids: List[str]
+    monster_names: List[str]
+    
+    # Optional fields
     player_dialogue: str = ""  # Player's dialogue input (optional)
     recent_memories_json: Optional[str] = None
     search_results_json: Optional[str] = None
@@ -136,10 +153,11 @@ class QuestGeneratorService:
             Exception: If quest generation fails after retry
         """
         prompt = self._create_quest_prompt(context)
+        raw_response = None  # Initialize to avoid UnboundLocalError
         
         try:
             # First attempt
-            logger.info(f"Generating quest for NPC {context.npc1_id}")
+            logger.info(f"Generating quest for NPC {context.quest_giver_npc_id}")
             raw_response = await self._call_gemini(prompt)
             quest_json = self._parse_and_validate(raw_response, context)
             
@@ -149,7 +167,7 @@ class QuestGeneratorService:
         except Exception as e:
             # Retry logic with error feedback
             logger.warning(f"First attempt failed: {e}. Retrying with error feedback...")
-            retry_prompt = self._create_retry_prompt(prompt, raw_response, str(e))
+            retry_prompt = self._create_retry_prompt(prompt, raw_response if raw_response else "", str(e))
             
             try:
                 raw_response_v2 = await self._call_gemini(retry_prompt)
@@ -189,11 +207,23 @@ class QuestGeneratorService:
         
         Generates dynamic prompt based on available game elements.
         """
+        # Quest Giver NPC info
         elements = [
-            f"- Quest Giver (NPC 1): ID: {context.npc1_id}, Name: {context.npc1_name}",
-            f"- Target NPC (NPC 2): ID: {context.npc2_id}, Name: {context.npc2_name}",
-            f"- Target Location: ID: {context.location_id}, Name: {context.location_name}"
+            f"- Quest Giver (NPC): ID: {context.quest_giver_npc_id}, Name: {context.quest_giver_npc_name}",
+            f"  Role: {context.quest_giver_npc_role}",
+            f"  Personality: {context.quest_giver_npc_personality}",
+            f"  Speaking Style: {context.quest_giver_npc_speaking_style}",
+            f"- Location: ID: {context.location_id}, Name: {context.location_name}"
         ]
+        
+        # Add NPCs in the same location
+        if context.inLocation_npc_ids and len(context.inLocation_npc_ids) > 0:
+            elements.append(f"\n- NPCs in {context.location_name}:")
+            for i in range(len(context.inLocation_npc_ids)):
+                npc_info = f"  • {context.inLocation_npc_names[i]} (ID: {context.inLocation_npc_ids[i]})"
+                npc_info += f" - Role: {context.inLocation_npc_roles[i]}"
+                npc_info += f", Personality: {context.inLocation_npc_personalities[i]}"
+                elements.append(npc_info)
         
         # NOTE: player_dialogue는 벡터 검색 쿼리로만 사용됨 (프롬프트에 직접 포함 안 함)
         # 검색 결과는 아래 memory_section을 통해 프롬프트에 포함됨
@@ -241,21 +271,23 @@ class QuestGeneratorService:
     """
         
         rules = [
-            f'1. The `quest_giver_npc_id` inside `quest_data` MUST be "{context.npc1_id}".',
+            f'1. The `quest_giver_npc_id` inside `quest_data` MUST be "{context.quest_giver_npc_id}".',
             f'2. `quest_data` MUST follow the Unity quest structure rules (GOTO/TALK types).',
-            f'3. `memory_data.npc_id` MUST be "{context.npc1_id}".'
+            f'3. `memory_data.npc_id` MUST be "{context.quest_giver_npc_id}".'
         ]
         
         # Dynamic rules based on available game elements
-        if context.monster_id:
-            rules.append(f'4. `quest_data` MAY use KILL type with target_monster_id: "{context.monster_id}".')
-            elements.append(f"- Target Monster: ID: {context.monster_id}")
+        if context.monster_ids and len(context.monster_ids) > 0:
+            monster_list = ", ".join([f"{context.monster_names[i]} (ID: {context.monster_ids[i]})" for i in range(len(context.monster_ids))])
+            rules.append(f'4. `quest_data` MAY use KILL type with one of these monsters: {monster_list}.')
+            elements.append(f"- Available Monsters: {monster_list}")
         else:
             rules.append("4. DO NOT use KILL type.")
         
-        if context.dungeon_id:
-            rules.append(f'5. `quest_data` MAY use DUNGEON type with target_dungeon_id: "{context.dungeon_id}".')
-            elements.append(f"- Target Dungeon: ID: {context.dungeon_id}")
+        if context.dungeon_ids and len(context.dungeon_ids) > 0:
+            dungeon_list = ", ".join([f"{context.dungeon_names[i]} (ID: {context.dungeon_ids[i]})" for i in range(len(context.dungeon_ids))])
+            rules.append(f'5. `quest_data` MAY use DUNGEON type with one of these dungeons: {dungeon_list}.')
+            elements.append(f"- Available Dungeons: {dungeon_list}")
         else:
             rules.append("5. DO NOT use DUNGEON type.")
         
@@ -325,7 +357,7 @@ class QuestGeneratorService:
         try:
             # Fix "on_start": [ "dialogue text" ] -> proper format
             pattern = r'("on_start"\\s*:\\s*\\[\\s*)"([\\s\\S]*?)"(\\s*\\])'
-            replacement = f'\\1{{"speaker_id": "{context.npc1_id}", "line": "\\2"}}\\3'
+            replacement = f'\\1{{"speaker_id": "{context.quest_giver_npc_id}", "line": "\\2"}}\\3'
             corrected_str = re.sub(pattern, replacement, corrected_str, flags=re.IGNORECASE)
         except Exception as e:
             logger.warning(f"Error while fixing JSON: {e}")
