@@ -28,7 +28,8 @@ public class DatabaseInitializer : MonoBehaviour
                 cmd.ExecuteNonQuery();
 
                 // sqlite_master에서 모든 테이블 이름 수집 (sqlite_ 로 시작하는 내부 테이블 제외)
-                cmd.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';";
+                // NPC 테이블도 제외
+                cmd.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name != 'NPC';";
                 List<string> tableNames = new List<string>();
                 using (IDataReader reader = cmd.ExecuteReader())
                 {
@@ -85,7 +86,9 @@ public class DatabaseInitializer : MonoBehaviour
                 CREATE TABLE IF NOT EXISTS DUNGEON (
                     DUNID	TEXT NOT NULL UNIQUE,
                     NAME	TEXT,
-                    PRIMARY KEY(DUNID)
+                    LOCID	TEXT,
+                    PRIMARY KEY(DUNID),
+                    FOREIGN KEY(LOCID) REFERENCES LOC(LOCID)
                 )";
                 cmd.ExecuteNonQuery();
 
@@ -94,7 +97,9 @@ public class DatabaseInitializer : MonoBehaviour
                 CREATE TABLE IF NOT EXISTS MONSTER (
                     MONID	TEXT NOT NULL UNIQUE,
                     NAME	TEXT,
-                    PRIMARY KEY(MONID)
+                    LOCID	TEXT,
+                    PRIMARY KEY(MONID),
+                    FOREIGN KEY(LOCID) REFERENCES LOC(LOCID)
                 )";
                 cmd.ExecuteNonQuery();
 
@@ -137,8 +142,74 @@ public class DatabaseInitializer : MonoBehaviour
 
                     cmd.ExecuteNonQuery();
                     counter++;
+
+                    // 한 Location에 속한 Dungeon과 Monster도 함께 삽입
+                    int duncounter = 1;
+                    int moncounter = 1;
+                    for(int i = 0; i < loc.transform.childCount; i++)
+                    {
+                        GameObject gameObjectInLoc = loc.transform.GetChild(i).gameObject;
+
+                        // DUNGEON 삽입
+                        if (gameObjectInLoc.CompareTag("Dungeon"))
+                        {
+                            string dunName = gameObjectInLoc.name;
+                            string dunId = $"DUN{duncounter:000}_{dunName}";
+
+                            cmd.CommandText = "INSERT OR REPLACE INTO DUNGEON (DUNID, NAME, LOCID) VALUES (@dunId, @dunName, @locId);";
+                            cmd.Parameters.Clear();
+
+                            var pdunId = cmd.CreateParameter();
+                            pdunId.ParameterName = "@dunId";
+                            pdunId.Value = dunId;
+                            cmd.Parameters.Add(pdunId);
+
+                            var pdunName = cmd.CreateParameter();
+                            pdunName.ParameterName = "@dunName";
+                            pdunName.Value = dunName;
+                            cmd.Parameters.Add(pdunName);
+
+                            var plocId = cmd.CreateParameter();
+                            plocId.ParameterName = "@locId";
+                            plocId.Value = locId;
+                            cmd.Parameters.Add(plocId);
+
+                            cmd.ExecuteNonQuery();
+                            duncounter++;
+                        }
+                        else if (gameObjectInLoc.CompareTag("Monster"))
+                        {
+                            // MONSTER 삽입
+                            string monName = gameObjectInLoc.name;
+                            string monId = $"MON{moncounter:000}_{monName}";
+
+                            cmd.CommandText = "INSERT OR REPLACE INTO MONSTER (MONID, NAME, LOCID) VALUES (@monId, @monName, @locId);";
+                            cmd.Parameters.Clear();
+
+                            var pmonId = cmd.CreateParameter();
+                            pmonId.ParameterName = "@monId";
+                            pmonId.Value = monId;
+                            cmd.Parameters.Add(pmonId);
+
+                            var pmonName = cmd.CreateParameter();
+                            pmonName.ParameterName = "@monName";
+                            pmonName.Value = monName;
+                            cmd.Parameters.Add(pmonName);
+
+                            var plocId2 = cmd.CreateParameter();
+                            plocId2.ParameterName = "@locId";
+                            plocId2.Value = locId;
+                            cmd.Parameters.Add(plocId2);
+
+                            cmd.ExecuteNonQuery();
+                            moncounter++;
+                        }
+                        
+                    }
                 }
-            }
+
+
+            }   
         }
 
         Debug.Log("Database initialized successfully.");

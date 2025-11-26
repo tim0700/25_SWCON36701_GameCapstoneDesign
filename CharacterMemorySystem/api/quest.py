@@ -93,7 +93,7 @@ async def generate_quest(
         HTTPException: If quest generation fails
     """
     try:
-        logger.info(f"Quest generation request for NPC {context.npc1_id}")
+        logger.info(f"Quest generation request for NPC {context.quest_giver_npc_id}")
         
         # Generate quest using Gemini
         result = await quest_gen.generate_quest(context)

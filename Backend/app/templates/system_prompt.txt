@@ -14,7 +14,7 @@ Your task is to simultaneously parse the `developer_prompt` (natural language) p
 3. Rule 2: Constraints
 * The `allowed_locations` list provided in this prompt is absolutely true.
 * The `primary_location` field must be inferred based on the contents of `developer_prompt`, but must only be selected from the `allowed_locations` list.
-* allowed_locations = [loc_magic_tower, loc_forest, loc_city, loc_desert]
+* allowed_locations = [LOC001_village, LOC002_forest]
 
 4. Rule 3: Create
 * All fields not specified in `developer_prompt` (age, gender, personality_keywords, speaking_style, goals, etc.) must be creatively inferred and generated to fit the medieval RPG context and the nuances of the prompt.

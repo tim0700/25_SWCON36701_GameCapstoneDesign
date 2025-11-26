@@ -1,6 +1,9 @@
 // NPC.cs
 using JetBrains.Annotations;
 using UnityEngine;
+using System.Data;
+using Mono.Data.Sqlite;
+
 // using TMPro; // TextMeshPro�� QuestStartTester�� ���� �����ϹǷ� �ʿ� ����
 
 public class NPC : MonoBehaviour
@@ -17,6 +20,31 @@ public class NPC : MonoBehaviour
         if (GetComponent<BoxCollider2D>() == null)
         {
             gameObject.AddComponent<BoxCollider2D>();
+        }
+    }
+
+    void Start()
+    {
+        string dbname = "/StaticDB.db";
+        string connectionString = "URI=file:" + Application.streamingAssetsPath + dbname;
+        using (IDbConnection dbConnection = new SqliteConnection(connectionString))
+        {
+            dbConnection.Open();
+
+            using (IDbCommand cmd = dbConnection.CreateCommand())
+            {
+                // NPC ID ����
+                cmd.CommandText = $"SELECT NPCID FROM NPC WHERE NAME = '{gameObject.name}'";
+
+                using (IDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        npcId = reader.GetString(0);
+                    }
+                }
+            }
+            dbConnection.Close();
         }
     }
 }
