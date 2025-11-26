@@ -26,32 +26,8 @@ public class QuestRequester : MonoBehaviour
     // ======================================================
     // 전송용 페이로드 정의 (context + memories 함께 전송)
     // ======================================================
-    // Backend API 모델에 맞는 페이로드 클래스
-    [System.Serializable]
-    private class QuestRequestPayload
+    private class QuestRequestPayload : QuestContextData
     {
-        // NPC1 (Quest Giver)
-        public string npc1_id;
-        public string npc1_name;
-        public string npc1_desc;
-        
-        // NPC2 (Target NPC in same location)
-        public string npc2_id;
-        public string npc2_name;
-        public string npc2_desc;
-        
-        // Location
-        public string location_id;
-        public string location_name;
-        
-        // Dungeon & Monster (단수)
-        public string dungeon_id;
-        public string monster_id;
-        
-        // Player input
-        public string player_dialogue;
-        
-        // Memories
         public string recent_memories_json;
         public string search_results_json;
     }
@@ -77,39 +53,25 @@ public class QuestRequester : MonoBehaviour
             return;
         }
 
-        // Backend API 모델에 맞게 페이로드 생성
+        // 페이로드 생성: memories는 JSON 문자열로 포함 (서버에서 JSON.parse 필요)
         QuestRequestPayload payload = new QuestRequestPayload
         {
-            // NPC1 = Quest Giver
-            npc1_id = contextData.quest_giver_npc_id,
-            npc1_name = contextData.quest_giver_npc_name,
-            npc1_desc = $"{contextData.quest_giver_npc_role}. {contextData.quest_giver_npc_personality}. {contextData.quest_giver_npc_speaking_style}",
-            
-            // NPC2 = First NPC in location (if exists)
-            npc2_id = contextData.inLocation_npc_ids != null && contextData.inLocation_npc_ids.Length > 0 
-                ? contextData.inLocation_npc_ids[0] : "",
-            npc2_name = contextData.inLocation_npc_names != null && contextData.inLocation_npc_names.Length > 0 
-                ? contextData.inLocation_npc_names[0] : "",
-            npc2_desc = contextData.inLocation_npc_roles != null && contextData.inLocation_npc_roles.Length > 0
-                ? $"{contextData.inLocation_npc_roles[0]}. {contextData.inLocation_npc_personalities[0]}. {contextData.inLocation_npc_speaking_styles[0]}"
-                : "",
-            
-            // Location
+            quest_giver_npc_id = contextData.quest_giver_npc_id,
+            quest_giver_npc_name = contextData.quest_giver_npc_name,
+            quest_giver_npc_role = contextData.quest_giver_npc_role,
+            quest_giver_npc_personality = contextData.quest_giver_npc_personality,
+            quest_giver_npc_speaking_style = contextData.quest_giver_npc_speaking_style,
+            inLocation_npc_ids = contextData.inLocation_npc_ids,
+            inLocation_npc_names = contextData.inLocation_npc_names,
+            inLocation_npc_roles = contextData.inLocation_npc_roles,
+            inLocation_npc_personalities = contextData.inLocation_npc_personalities,
+            inLocation_npc_speaking_styles = contextData.inLocation_npc_speaking_styles,
             location_id = contextData.location_id,
             location_name = contextData.location_name,
-            
-            // Dungeon (첫 번째 던전 사용)
-            dungeon_id = contextData.dungeon_ids != null && contextData.dungeon_ids.Length > 0 
-                ? contextData.dungeon_ids[0] : "",
-            
-            // Monster (첫 번째 몬스터 사용)
-            monster_id = contextData.monster_ids != null && contextData.monster_ids.Length > 0 
-                ? contextData.monster_ids[0] : "",
-            
-            // Player dialogue
-            player_dialogue = playerDialogue ?? "",
-            
-            // Memories
+            dungeon_ids = contextData.dungeon_ids,
+            dungeon_names = contextData.dungeon_names,
+            monster_ids = contextData.monster_ids,
+            monster_names = contextData.monster_names,
             recent_memories_json = recentMemories != null ? JsonUtility.ToJson(recentMemories) : null,
             search_results_json = searchResults != null ? JsonUtility.ToJson(searchResults) : null
         };
