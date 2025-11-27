@@ -24,6 +24,7 @@ public class QuestContextData
     public string[] monster_ids;
     public string[] monster_names;
     public List<NpcRelationEntry> relations;
+    public string player_dialogue;
 }
 
 [System.Serializable]

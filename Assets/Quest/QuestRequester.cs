@@ -84,6 +84,7 @@ public class QuestRequester : MonoBehaviour
             dungeon_names = contextData.dungeon_names,
             monster_ids = contextData.monster_ids,
             monster_names = contextData.monster_names,
+            player_dialogue = playerDialogue ?? "",
             relations = convertedRelations,
             recent_memories_json = recentMemories != null ? JsonUtility.ToJson(recentMemories) : null,
             search_results_json = searchResults != null ? JsonUtility.ToJson(searchResults) : null
