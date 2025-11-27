@@ -14,6 +14,7 @@ import json
 import re
 import logging
 from typing import Dict, Any, Optional, List
+import random # 임시로 테스트할때 랜덤으로 고르기 위해 추가 
 
 import vertexai
 from vertexai.generative_models import GenerativeModel, Part
@@ -55,6 +56,16 @@ class QuestContext(BaseModel):
     # Monsters (arrays)
     monster_ids: List[str]
     monster_names: List[str]
+
+    # NPC relationships
+    """
+      "relations": [
+    ["npc_bob", "friend"],
+    ["npc_charlie", "rival"]
+  ]
+    이러한 형식으로 전달 
+    """
+    relations: List[List[str]] = []
     
     # Optional fields
     player_dialogue: str = ""  # Player's dialogue input (optional)
@@ -95,7 +106,7 @@ QUEST_JSON_FORMAT_EXAMPLE = """
     },
     {
       "step_id": 3,
-      "objective_type": "DUNGEON",
+      "objective_type": "GOTO",
       "description_for_player": "Clear the Dungeon.",
       "dialogues": {
         "on_start": [{"speaker_id": "player_character", "line": "Monster is gone, now for the dungeon."}],
@@ -206,96 +217,154 @@ class QuestGeneratorService:
         Create prompt for Gemini with game context.
         
         Generates dynamic prompt based on available game elements.
+        Modified: Dungeon logic changed to GOTO type.
         """
+        
+        # ==================================================================
+        # 1. RANDOM SELECTION LOGIC (Python Side)
+        # ==================================================================
+        
+        # ------------------------------------------------------------------
+        # Pick a Target NPC & Check Relations
+        # ------------------------------------------------------------------
+        selected_npc_str = "No specific NPC target available."
+        target_npc_id = None
+        relation_info = "None"
+        
+        if context.inLocation_npc_ids and len(context.inLocation_npc_ids) > 0:
+            idx = random.randint(0, len(context.inLocation_npc_ids) - 1)
+            target_npc_id = context.inLocation_npc_ids[idx]
+            t_name = context.inLocation_npc_names[idx]
+            t_role = context.inLocation_npc_roles[idx]
+            t_pers = context.inLocation_npc_personalities[idx]
+            
+            # Relation Lookup
+            rel_map = {item[0]: item[1] for item in context.relations if len(item) >= 2}
+            
+            if target_npc_id in rel_map:
+                relation_info = rel_map[target_npc_id]
+            else:
+                relation_info = "Stranger/Neutral"
+                
+            selected_npc_str = (
+                f"- TARGET NPC: {t_name} (ID: {target_npc_id})\n"
+                f"  Role: {t_role}, Personality: {t_pers}\n"
+                f"  RELATIONSHIP to Quest Giver: {relation_info}"
+            )
+
+        # ------------------------------------------------------------------
+        # Pick a Dungeon (Changed to GOTO target)
+        # ------------------------------------------------------------------
+        selected_dungeon_str = "No dungeon available."
+        target_dungeon_id = None  # ID 저장을 위한 변수 추가
+        
+        if context.dungeon_ids and len(context.dungeon_ids) > 0:
+            d_idx = random.randint(0, len(context.dungeon_ids) - 1)
+            target_dungeon_id = context.dungeon_ids[d_idx]
+            selected_dungeon_str = f"- TARGET DUNGEON: {context.dungeon_names[d_idx]} (ID: {target_dungeon_id})"
+
+        # ------------------------------------------------------------------
+        # Pick a Monster
+        # ------------------------------------------------------------------
+        selected_monster_str = "No monster available."
+        
+        if context.monster_ids and len(context.monster_ids) > 0:
+            m_idx = random.randint(0, len(context.monster_ids) - 1)
+            selected_monster_str = f"- TARGET MONSTER: {context.monster_names[m_idx]} (ID: {context.monster_ids[m_idx]})"
+
+        # ==================================================================
+        # 2. PROMPT CONSTRUCTION
+        # ==================================================================
+
         # Quest Giver NPC info
         elements = [
             f"- Quest Giver (NPC): ID: {context.quest_giver_npc_id}, Name: {context.quest_giver_npc_name}",
             f"  Role: {context.quest_giver_npc_role}",
             f"  Personality: {context.quest_giver_npc_personality}",
             f"  Speaking Style: {context.quest_giver_npc_speaking_style}",
-            f"- Location: ID: {context.location_id}, Name: {context.location_name}"
+            f"  Location: ID: {context.location_id}, Name: {context.location_name}"
         ]
         
-        # Add NPCs in the same location
-        if context.inLocation_npc_ids and len(context.inLocation_npc_ids) > 0:
-            elements.append(f"\n- NPCs in {context.location_name}:")
-            for i in range(len(context.inLocation_npc_ids)):
-                npc_info = f"  • {context.inLocation_npc_names[i]} (ID: {context.inLocation_npc_ids[i]})"
-                npc_info += f" - Role: {context.inLocation_npc_roles[i]}"
-                npc_info += f", Personality: {context.inLocation_npc_personalities[i]}"
-                elements.append(npc_info)
+        # Add Selected Game Elements
+        elements.append("\n*** SELECTED TARGETS (USE THESE) ***")
+        elements.append(selected_npc_str)
+        elements.append(selected_dungeon_str)
+        elements.append(selected_monster_str)
         
-        # NOTE: player_dialogue는 벡터 검색 쿼리로만 사용됨 (프롬프트에 직접 포함 안 함)
-        # 검색 결과는 아래 memory_section을 통해 프롬프트에 포함됨
+        # Player Dialogue (Theme)
+        player_theme_section = ""
+        if context.player_dialogue:
+            player_theme_section = f"""
+    *** CRITICAL THEME (PLAYER INPUT) ***
+    The player has spoken/input the following keyword or sentence: "{context.player_dialogue}"
+    
+    YOU MUST GENERATE A QUEST BASED ON THIS THEME.
+    - Example: If the player said "Sky", the quest must involve high places, birds, or weather.
+    - Make the NPC reference this keyword in the 'on_start' dialogue.
+    """
         
-        # Add memory section if memory data is provided
+        # Memory Section
         memory_section = ""
         if context.recent_memories_json or context.search_results_json:
             memory_section = """
     *** NPC MEMORY CONTEXT ***
     The NPC has memories of past interactions with the player. Use this information to create a quest that feels personalized and references past events.
     """
-            
-            # Parse and add recent memories
             if context.recent_memories_json:
                 try:
                     recent_data = json.loads(context.recent_memories_json)
-                    if recent_data.get("memories") and len(recent_data["memories"]) > 0:
-                        memory_section += "\n    Recent Memories (Most Recent First):\n"
+                    if recent_data.get("memories"):
+                        memory_section += "\n    Recent Memories:\n"
                         for mem in recent_data["memories"]:
-                            timestamp = mem.get("timestamp", "Unknown time")
-                            content = mem.get("content", "")
-                            memory_section += f"    - [{timestamp}] {content}\n"
-                except (json.JSONDecodeError, KeyError, TypeError) as e:
-                    logger.warning(f"Failed to parse recent_memories_json: {e}")
+                            memory_section += f"    - [{mem.get('timestamp')}] {mem.get('content')}\n"
+                except: pass
             
-            # Parse and add search results (relevant memories)
             if context.search_results_json:
                 try:
                     search_data = json.loads(context.search_results_json)
-                    if search_data.get("results") and len(search_data["results"]) > 0:
-                        memory_section += "\n    Relevant Past Memories (Sorted by Relevance):\n"
-                        for result in search_data["results"]:
-                            mem = result.get("memory", {})
-                            score = result.get("similarity_score", 0.0)
-                            content = mem.get("content", "")
-                            memory_section += f"    - [Similarity: {score:.2f}] {content}\n"
-                except (json.JSONDecodeError, KeyError, TypeError) as e:
-                    logger.warning(f"Failed to parse search_results_json: {e}")
+                    if search_data.get("results"):
+                        memory_section += "\n    Relevant Past Memories:\n"
+                        for res in search_data["results"]:
+                            memory_section += f"    - {res.get('memory', {}).get('content')}\n"
+                except: pass
             
-            memory_section += """
-    IMPORTANT: Incorporate these memories naturally into the quest narrative. For example:
-    - Reference past events in NPC dialogues
-    - Create quests that follow up on previous interactions
-    - Reward the player for past achievements or address past failures
-    """
+            memory_section += "\n    IMPORTANT: Reference these memories naturally in dialogues."
         
+        # Rules Construction
         rules = [
             f'1. The `quest_giver_npc_id` inside `quest_data` MUST be "{context.quest_giver_npc_id}".',
-            f'2. `quest_data` MUST follow the Unity quest structure rules (GOTO/TALK types).',
+            f'2. `quest_data` MUST follow the Unity quest structure rules (GOTO/TALK/KILL types).',
             f'3. `memory_data.npc_id` MUST be "{context.quest_giver_npc_id}".'
         ]
         
-        # Dynamic rules based on available game elements
-        if context.monster_ids and len(context.monster_ids) > 0:
-            monster_list = ", ".join([f"{context.monster_names[i]} (ID: {context.monster_ids[i]})" for i in range(len(context.monster_ids))])
-            rules.append(f'4. `quest_data` MAY use KILL type with one of these monsters: {monster_list}.')
-            elements.append(f"- Available Monsters: {monster_list}")
-        else:
-            rules.append("4. DO NOT use KILL type.")
+        # Dynamic rules based on SELECTED elements
         
-        if context.dungeon_ids and len(context.dungeon_ids) > 0:
-            dungeon_list = ", ".join([f"{context.dungeon_names[i]} (ID: {context.dungeon_ids[i]})" for i in range(len(context.dungeon_ids))])
-            rules.append(f'5. `quest_data` MAY use DUNGEON type with one of these dungeons: {dungeon_list}.')
-            elements.append(f"- Available Dungeons: {dungeon_list}")
+        # A. Monster Rule (KILL)
+        if "No monster" not in selected_monster_str:
+             rules.append(f'4. `quest_data` MUST use KILL type for the selected monster.')
         else:
-            rules.append("5. DO NOT use DUNGEON type.")
+             rules.append("4. DO NOT use KILL type.")
         
-        elements_str = "\\n    ".join(elements)
-        rules_str = "\\n    ".join(rules)
+        # B. Dungeon Rule (Changed to GOTO)
+        if target_dungeon_id:
+             rules.append(f'5. `quest_data` MUST use GOTO type targeting the selected dungeon location ("{target_dungeon_id}").')
+             # 설명 추가: 던전이지만 GOTO 타입을 쓰라고 명시
+        else:
+             # 던전이 없으면 굳이 금지 규칙을 넣지 않아도 됨 (GOTO는 일반적인 이동에도 쓰이므로)
+             pass
+
+        # C. NPC Rule (TALK)
+        if target_npc_id:
+             rules.append(f'6. `quest_data` MUST use TALK type with "{target_npc_id}". Tone: {relation_info}.')
+        
+        elements_str = "\n    ".join(elements)
+        rules_str = "\n    ".join(rules)
         
         return f"""
     You are a quest designer. Generate a JSON response containing TWO parts: "quest_data" and "memory_data".
+    
+    {player_theme_section}
+    
     {memory_section}
     
     *** INPUT ELEMENTS ***
@@ -303,18 +372,17 @@ class QuestGeneratorService:
 
     *** CRITICAL RULES ***
     {rules_str}
-    6. The OUTPUT MUST be a single JSON object with two keys: "quest_data" and "memory_data".
-    7. "quest_data": The standard quest JSON for the game engine.
-    8. "memory_data": Information for the NPC's long-term vector memory.
+    7. The OUTPUT MUST be a single JSON object with two keys: "quest_data" and "memory_data".
+    8. "quest_data": The standard quest JSON for the game engine.
+    9. "memory_data": Information for the NPC's long-term vector memory.
     
-    9. (!!!) LANGUAGE RULE: All content (Quest Title, Summary, Dialogues, Descriptions, Memory Content) MUST BE IN ENGLISH. Do NOT use Korean.
+    10. (!!!) LANGUAGE RULE: All content MUST BE IN KOREAN.
 
     *** JSON OUTPUT FORMAT ***
     {QUEST_JSON_FORMAT_EXAMPLE}
 
     Generate the JSON now.
-    """
-    
+    """    
     def _parse_and_validate(self, json_str: str, context: QuestContext) -> Dict:
         """
         Parse and validate JSON response from Gemini.

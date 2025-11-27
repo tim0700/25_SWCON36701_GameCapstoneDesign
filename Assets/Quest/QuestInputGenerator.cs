@@ -23,6 +23,19 @@ public class QuestContextData
     public string[] dungeon_names;
     public string[] monster_ids;
     public string[] monster_names;
+    public List<NpcRelationEntry> relations;
+}
+
+[System.Serializable]
+public class NpcRelationEntry
+{
+    public string npc_id;
+    public string relation;
+    public NpcRelationEntry(string npc_id, string relation)
+    {
+        this.npc_id = npc_id;
+        this.relation = relation;
+    }
 }
 
 public class QuestInputGenerator : MonoBehaviour
@@ -155,6 +168,24 @@ public class QuestInputGenerator : MonoBehaviour
                 contextData.inLocation_npc_personalities = npcPersonalitiesList.ToArray();
                 contextData.inLocation_npc_speaking_styles = npcSpeakingStylesList.ToArray();
             }
+
+            // 6. 퀘스트 제공자 기준 관계 정보 조회
+            using (IDbCommand cmd = dbConnection.CreateCommand())
+            {
+                List<NpcRelationEntry> relationsList = new List<NpcRelationEntry>();
+                cmd.CommandText = $"SELECT NPC2ID, RELATION FROM NPC_RELATION WHERE NPC1ID = '{questGiverNpcId}'";
+                using (IDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string npc2id = reader.GetString(0);
+                        string relation = reader.GetString(1);
+                        relationsList.Add(new NpcRelationEntry(npc2id, relation));
+                    }
+                }
+                contextData.relations = relationsList;
+            }
+
 
             Debug.Log("contextData is: " + JsonUtility.ToJson(contextData));
             
