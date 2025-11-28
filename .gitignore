@@ -138,4 +138,5 @@ Backend/docs/_build/
 CharacterMemorySystem/my-service-account-key.json
 
 
-.plastic
+*.plastic
+/.plastic
