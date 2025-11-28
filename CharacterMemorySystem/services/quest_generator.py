@@ -249,7 +249,6 @@ class QuestGeneratorService:
                         
                         # ★ [추가] 유사도 점수 확인 (커트라인 도입)
                         # 점수가 0.35 (35%) 미만이면 "관련 없음"으로 치고 무시
-                        # (테스트해보면서 이 수치를 0.3 ~ 0.5 사이로 조절하세요)
                         similarity_score = result.get("similarity_score", 0.0)
                         if similarity_score < 0.35: 
                             continue 
@@ -389,41 +388,44 @@ class QuestGeneratorService:
                             memory_section += f"    - [{mem.get('timestamp')}] {mem.get('content')}\n"
                 except: pass
         
-        elements_str = "\n    ".join(elements)
+        # ★ [수정] f-string 안에서 join을 쓰지 않도록 미리 변수로 만듭니다.
+        quest_giver_info_str = "\n    ".join(elements)
         
         return f"""
-    You are a creative Game Master. Create a narrative-driven quest.
+    You are a Master Quest Designer. Create a quest with strong narrative causality.
     
     {player_theme_section}
-    
     {memory_section}
     
-    *** QUEST GIVER INFO ***
-    {elements_str}
+    *** QUEST GIVER ***
+    {quest_giver_info_str}
 
-    *** AVAILABLE INGREDIENTS (Must Use) ***
+    *** INGREDIENTS (Use logic to pick step order) ***
     {ingredients_str}
 
-    *** CRITICAL RULES ***
+    *** CRITICAL RULES FOR CAUSALITY ***
     {theme_rules}
 
-    1. **Structure**: Create a logical flow (2-5 steps).
-    2. **Usage**: You MUST use the `AVAILABLE INGREDIENTS` listed above.
-       - Monster provided? -> Add `KILL` step.
-       - Dungeon provided? -> Add `DUNGEON` step.
-       - Target NPC provided? -> Add `TALK` step.
-    
-    3. **Narrative Connection**: 
-       - Explain *why* the player needs to do these tasks based on the THEME.
-    
-    4. **JSON Keys**:
-       - DUNGEON type -> `"target_dungeon_id"`
-       - GOTO type -> `"target_location_id"`
-       - KILL type -> `"target_monster_id"`
-       - TALK type -> `"target_npc_id"`
+    1. **The "Bridge" Rule (Causality)**: 
+       - Every dialogue MUST explain *why* the player needs to do the NEXT objective.
+       - **BAD**: "Go kill the Goblin." (No reason)
+       - **GOOD**: "That Goblin swallowed the medicine I need! Please cut it open and bring it back." (Explains the KILL step)
+       - **GOOD**: "I heard Aura knows where the secret entrance is. Go ask her." (Explains the TALK step)
 
-    5. The OUTPUT MUST be a single JSON object with two keys: "quest_data" and "memory_data".
-    6. **LANGUAGE**: All content MUST BE IN KOREAN.
+    2. **Mandatory Structure**:
+       - **Step 1**: Interaction with Quest Giver (Reaction to Player Input + Initial Problem).
+       - **Middle Steps**: Use the Ingredients (Monster/Dungeon/NPC). Chain them logically.
+       - **Final Step (Resolution)**: YOU MUST include a final `TALK` step returning to the Quest Giver (`{context.quest_giver_npc_id}`).
+         - The dialogue here should wrap up the story, express gratitude (or anger), and reference the Player Input one last time.
+
+    3. **JSON Format Rules**:
+       - KILL type -> `target_monster_id`
+       - DUNGEON type -> `target_dungeon_id`
+       - TALK type -> `target_npc_id`
+       - GOTO type -> `target_location_id`
+
+    4. **Output**: A single JSON object with `quest_data` and `memory_data`.
+    5. **Language**: KOREAN ONLY.
 
     *** JSON OUTPUT FORMAT ***
     {QUEST_JSON_FORMAT_EXAMPLE}
@@ -471,8 +473,8 @@ class QuestGeneratorService:
         
         try:
             # Fix "on_start": [ "dialogue text" ] -> proper format
-            pattern = r'("on_start"\\s*:\\s*\\[\\s*)"([\\s\\S]*?)"(\\s*\\])'
-            replacement = f'\\1{{"speaker_id": "{context.quest_giver_npc_id}", "line": "\\2"}}\\3'
+            pattern = r'("on_start"\s*:\s*\[\s*)"([\s\S]*?)"(\s*\])'
+            replacement = r'\1{"speaker_id": "' + context.quest_giver_npc_id + r'", "line": "\2"}\3'
             corrected_str = re.sub(pattern, replacement, corrected_str, flags=re.IGNORECASE)
         except Exception as e:
             logger.warning(f"Error while fixing JSON: {e}")
