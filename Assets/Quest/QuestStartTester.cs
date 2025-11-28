@@ -82,6 +82,23 @@ public class QuestStartTester : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 특정 NPC가 현재 진행 중인 퀘스트의 TALK 목표인지 확인
+    /// </summary>
+    /// <param name="npcId">확인할 NPC ID</param>
+    /// <returns>TALK 목표가 맞으면 true</returns>
+    public bool IsTargetNPC(string npcId)
+    {
+        if (currentQuest == null || currentStepIndex >= currentQuest.QuestSteps.Count)
+            return false;
+
+        QuestStep currentStep = currentQuest.QuestSteps[currentStepIndex];
+
+        // TALK 타입이고, 목표 NPC ID가 일치하는지 확인
+        return currentStep.ObjectiveType.ToUpper() == "TALK" &&
+               currentStep.Details.TargetNpcId == npcId;
+    }
+
     public void NotifyEvent(string eventType, string eventId)
     {
         if (currentQuest == null) return;
