@@ -48,15 +48,7 @@ public class PlayerController : MonoBehaviour
                     return; // 장소 클릭 처리 완료
                 }
 
-                // (만약 CharacterInfo를 꼭 써야 한다면 GetComponent<NPC>() 대신 사용)
-                
-                // 3. 포탈을 클릭했는지 확인
-                Portal targetPortal = hit.collider.GetComponent<Portal>();
-                if (targetPortal != null)
-                {
-                    HandlePortalClick(targetPortal);
-                    return; // 포탈 클릭 처리 완료
-                }
+                // Portal은 이제 OnTriggerEnter2D로 자동 작동 (클릭 불필요)
             }
             else
             {
@@ -102,19 +94,6 @@ public class PlayerController : MonoBehaviour
             Debug.Log($"[PlayerController] 퀘스트 이벤트 알림: {eventType} {entityId}");
             QuestStartTester.Instance.NotifyEvent(eventType, entityId);
         }
-    }
-
-    void HandlePortalClick(Portal portal)
-    {
-        // 플레이어를 포탈로 이동
-        transform.position = portal.transform.position;
-        
-        // Portal에 연결된 장소로 이동 처리
-        // 카메라와 플레이어 위치를 새로운 location으로 옮김
-        Debug.Log($"[PlayerController] 포탈 이동: {portal.linkedLocation.name}");
-        Vector2 targetPosition = portal.linkedLocation.transform.position;
-        Camera.main.transform.position = new Vector3(targetPosition.x, targetPosition.y, Camera.main.transform.position.z);
-        transform.position = new Vector3(targetPosition.x, targetPosition.y, transform.position.z);
     }
 
     private IEnumerator WaitForInputCompletion(NPC target)

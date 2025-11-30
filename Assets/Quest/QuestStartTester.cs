@@ -25,8 +25,18 @@ public class QuestStartTester : MonoBehaviour
 
     void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        // Singleton + DontDestroyOnLoad 패턴으로 씬 전환 시 유지
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+            Debug.Log("[QuestManager] DontDestroyOnLoad 적용 - 씬 전환에도 유지됨");
+        }
+        else
+        {
+            Destroy(gameObject);
+            Debug.Log("[QuestManager] 중복 인스턴스 제거");
+        }
     }
 
     void Start()

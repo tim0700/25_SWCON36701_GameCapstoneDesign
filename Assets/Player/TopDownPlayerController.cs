@@ -45,6 +45,23 @@ public class TopDownPlayerController : MonoBehaviour
 
         // Animator 컴포넌트 가져오기 (선택사항)
         animator = GetComponent<Animator>();
+        
+        // 포탈에서 온 경우 저장된 위치로 스폰
+        if (PlayerPrefs.HasKey("SpawnX"))
+        {
+            float x = PlayerPrefs.GetFloat("SpawnX");
+            float y = PlayerPrefs.GetFloat("SpawnY");
+            float z = PlayerPrefs.GetFloat("SpawnZ");
+            
+            transform.position = new Vector3(x, y, z);
+            
+            // 사용 후 삭제
+            PlayerPrefs.DeleteKey("SpawnX");
+            PlayerPrefs.DeleteKey("SpawnY");
+            PlayerPrefs.DeleteKey("SpawnZ");
+            
+            Debug.Log($"[Player] 포탈에서 스폰: {transform.position}");
+        }
     }
 
     void Update()
