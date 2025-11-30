@@ -214,23 +214,27 @@ class QuestGeneratorService:
     def _create_quest_prompt(self, context: QuestContext) -> str:
         """
         Create prompt for Gemini with game context.
-        
-        Modified:
-        - Added Debug Logs to check if player_dialogue is received.
-        - Enforced 'Theme' as the highest priority rule.
-        - NPC Selection Logic (Memory > Relation > Random).
+
         """
         
-        # [DEBUG] 로그 출력: 데이터가 잘 들어왔는지 확인
+        # [DEBUG] 로그 출력
         logger.info(f"====== [Prompt Gen] Player Dialogue: '{context.player_dialogue}' ======")
         
         # ==================================================================
-        # 1. SMART SELECTION LOGIC (Python Side)
+        # 0. GAME STORY & ATMOSPHERE (New!)
         # ==================================================================
+        # 여기에 게임의 전체적인 스토리나 분위기를 적으세요.
+        story_context = """
+    **GAME SETTING**: A dark medieval fantasy world'.
+    **CURRENT ATMOSPHERE**: Tension is high. The forest is becoming dangerous.
+    **LORE**: Long ago, the ancient kingdom fell due to betrayal. Now, monsters are agitated by the approaching eclipse.
+    """
+
+        # ==================================================================
+        # 1. SMART SELECTION LOGIC (Target NPC Only)
+        # ==================================================================
+        # (NPC는 대화의 핵심 대상이므로, 여전히 Python이 '기억' 기반으로 한 명을 콕 집어주는 게 좋습니다.)
         
-        # ------------------------------------------------------------------
-        # Pick a Target NPC (Priority: Keyword Relevance > Relation > Random)
-        # ------------------------------------------------------------------
         selected_npc_str = ""
         target_npc_id = None
         relation_info = "None"
@@ -240,192 +244,150 @@ class QuestGeneratorService:
             best_idx = -1
             selection_reason = ""
             
-            # --- Logic A: Check Search Results (Keyword Relevance) ---
+            # --- Logic A: Check Search Results ---
             if context.search_results_json:
                 try:
                     s_data = json.loads(context.search_results_json)
                     for result in s_data.get("results", []):
                         if best_idx != -1: break 
-                        
-                        # ★ [추가] 유사도 점수 확인 (커트라인 도입)
-                        # 점수가 0.35 (35%) 미만이면 "관련 없음"으로 치고 무시
-                        similarity_score = result.get("similarity_score", 0.0)
-                        if similarity_score < 0.35: 
-                            continue 
+                        if result.get("similarity_score", 0.0) < 0.35: continue 
 
                         memory_content = result.get("memory", {}).get("content", "")
-                        
                         for i in candidate_indices:
                             n_id = context.inLocation_npc_ids[i]
                             n_name = context.inLocation_npc_names[i]
-                            
                             if n_id in memory_content or n_name in memory_content:
                                 best_idx = i
-                                selection_reason = f"(Selected because they are related to player's input: '{context.player_dialogue}')"
-                                
-                                logger.info(f"   [Reasoning] Found Keyword Match! (Score: {similarity_score:.2f})")
-                                logger.info(f"   [Reasoning] Memory: '{memory_content}'")
-                                logger.info(f"   [Reasoning] Matched NPC: {n_name} ({n_id}) inside this memory.")
+                                selection_reason = f"(Selected: Related to Input)"
+                                logger.info(f"   [Reasoning] Match found! NPC: {n_name}")
                                 break
                 except: pass
 
-            # --- Logic B: Check Relations (Fallback) ---
+            # --- Logic B & C: Relation & Random ---
             rel_map = {item[0]: item[1] for item in context.relations if len(item) >= 2}
-            
             if best_idx == -1:
                 related_indices = [i for i in candidate_indices if context.inLocation_npc_ids[i] in rel_map]
-                if related_indices:
-                    best_idx = random.choice(related_indices)
-                    selection_reason = "(Selected based on Relation)"
-            
-            # --- Logic C: Fallback to Random ---
-            if best_idx == -1:
-                best_idx = random.randint(0, len(context.inLocation_npc_ids) - 1)
-                selection_reason = "(Randomly Selected)"
+                best_idx = random.choice(related_indices) if related_indices else random.randint(0, len(context.inLocation_npc_ids) - 1)
+                selection_reason = "(Selected: Relation/Random)"
 
-            # [DEBUG] 선택된 NPC 로그
-            logger.info(f"====== [Prompt Gen] Selected NPC: {context.inLocation_npc_names[best_idx]} {selection_reason} ======")
-
-            # Finalize Target NPC
+            # NPC 확정
             target_npc_id = context.inLocation_npc_ids[best_idx]
-            t_name = context.inLocation_npc_names[best_idx]
-            t_role = context.inLocation_npc_roles[best_idx]
-            t_pers = context.inLocation_npc_personalities[best_idx]
-            
-            if target_npc_id in rel_map:
-                relation_info = rel_map[target_npc_id]
-            else:
-                relation_info = "Stranger/Neutral"
-                
             selected_npc_str = (
-                f"- TARGET NPC: {t_name} (ID: {target_npc_id}) {selection_reason}\n"
-                f"  Role: {t_role}, Personality: {t_pers}\n"
-                f"  RELATIONSHIP to Quest Giver: {relation_info}"
+                f"- [TARGET NPC] {context.inLocation_npc_names[best_idx]} (ID: {target_npc_id}) {selection_reason}\n"
+                f"  Role: {context.inLocation_npc_roles[best_idx]}, Personality: {context.inLocation_npc_personalities[best_idx]}\n"
+                f"  RELATIONSHIP: {relation_info}"
             )
 
-        # ------------------------------------------------------------------
-        # Pick a Dungeon (Random)
-        # ------------------------------------------------------------------
-        selected_dungeon_str = ""
-        target_dungeon_id = None
+        # ==================================================================
+        # 2. RESOURCE LIST GENERATION (Changed!)
+        # ==================================================================
+        # 파이썬이 고르지 않고, "전체 목록"을 문자열로 만듭니다.
         
-        if context.dungeon_ids and len(context.dungeon_ids) > 0:
-            d_idx = random.randint(0, len(context.dungeon_ids) - 1)
-            target_dungeon_id = context.dungeon_ids[d_idx]
-            selected_dungeon_str = f"- TARGET DUNGEON: {context.dungeon_names[d_idx]} (ID: {target_dungeon_id})"
-
-        # ------------------------------------------------------------------
-        # Pick a Monster (Random)
-        # ------------------------------------------------------------------
-        selected_monster_str = ""
+        available_resources_list = []
         
-        if context.monster_ids and len(context.monster_ids) > 0:
-            m_idx = random.randint(0, len(context.monster_ids) - 1)
-            selected_monster_str = f"- TARGET MONSTER: {context.monster_names[m_idx]} (ID: {context.monster_ids[m_idx]})"
+        # 1. Target NPC (Must be included as an option)
+        if selected_npc_str:
+            available_resources_list.append(selected_npc_str)
+            
+        # 2. All Available Dungeons
+        if context.dungeon_ids:
+            for i in range(len(context.dungeon_ids)):
+                available_resources_list.append(f"- [DUNGEON] {context.dungeon_names[i]} (ID: {context.dungeon_ids[i]})")
+                
+        # 3. All Available Monsters
+        if context.monster_ids:
+            for i in range(len(context.monster_ids)):
+                available_resources_list.append(f"- [MONSTER] {context.monster_names[i]} (ID: {context.monster_ids[i]})")
+        
+        resources_str = "\n".join(available_resources_list)
 
         # ==================================================================
-        # 2. PROMPT CONSTRUCTION
+        # 3. PROMPT CONSTRUCTION
         # ==================================================================
 
         elements = [
-            f"- Quest Giver (NPC): ID: {context.quest_giver_npc_id}, Name: {context.quest_giver_npc_name}",
+            f"- Quest Giver: {context.quest_giver_npc_name} (ID: {context.quest_giver_npc_id})",
             f"  Role: {context.quest_giver_npc_role}",
             f"  Personality: {context.quest_giver_npc_personality}",
             f"  Speaking Style: {context.quest_giver_npc_speaking_style}",
-            f"  Location: ID: {context.location_id}, Name: {context.location_name}"
+            f"  Location: {context.location_name}"
         ]
         
-        available_ingredients = []
-        if selected_npc_str: available_ingredients.append(selected_npc_str)
-        if selected_dungeon_str: available_ingredients.append(selected_dungeon_str)
-        if selected_monster_str: available_ingredients.append(selected_monster_str)
-        
-        ingredients_str = "\n".join(available_ingredients)
-        
-        # Player Dialogue (Theme) - ★★★ 수정됨: 위치 이동 및 강력한 지시
+        # Theme & Mood Logic
         player_theme_section = ""
-        theme_rules = ""
+        theme_rule = "0. Create a quest that fits the WORLD LORE and NPC's situation."
         
         if context.player_dialogue and context.player_dialogue.strip():
-            player_theme_section = f"""
-    ####################################################################
-    *** ABSOLUTE PRIORITY THEME ***
-    PLAYER INPUT: "{context.player_dialogue}"
-    ####################################################################
-    """
-            theme_rules = f"""
-    0. **THEME ENFORCEMENT (HIGHEST PRIORITY)**: 
-       - The generated quest MUST be about "{context.player_dialogue}".
-       - The `quest_title` MUST reference this theme.
-       - The Quest Giver's first dialogue MUST explicitly mention or react to the player saying "{context.player_dialogue}".
-       - **CREATIVE CONNECTION**: If the selected Monster/Dungeon seems unrelated, you MUST invent a magical or metaphorical reason to connect them.
-         (e.g., If Input="Sky" and Monster="Slime" -> "A Slime that fell from the Sky" or "Slime eating a cloud".)
-    """
-        else:
-            player_theme_section = "The player approached silently. Create a quest based on the NPC's needs."
-            theme_rules = "0. Create a natural quest based on the NPC's role and situation."
-        
-        # Memory Section
+            player_theme_section = f"*** PLAYER INPUT: \"{context.player_dialogue}\" ***"
+            theme_rule = f"""0. **THEME ENFORCEMENT (HIGHEST PRIORITY)**: 
+       - The quest MUST revolve around "{context.player_dialogue}".
+       - **SELECTION RULE**: Look at the 'AVAILABLE RESOURCES' list. Pick only the Monsters/Dungeons that logically fit this theme.
+       - If the theme is "Hunger", pick a Beast-type monster (for meat).
+       - If the theme is "Treasure", pick a Dungeon.
+       - If nothing fits perfectly, pick the closest one and invent a creative reason."""
+
+        # Memory Logic
         memory_section = ""
-        if context.recent_memories_json or context.search_results_json:
-            memory_section = "*** NPC MEMORY CONTEXT ***\n"
-            
+        if context.search_results_json or context.recent_memories_json:
+            memory_section = "*** MEMORY CONTEXT ***\n"
+            # (Memory parsing omitted for brevity - same as before)
             if context.search_results_json:
                 try:
-                    search_data = json.loads(context.search_results_json)
-                    if search_data.get("results"):
-                        memory_section += "\n    [Related to Player Input]:\n"
-                        for res in search_data["results"]:
-                            memory_section += f"    - {res.get('memory', {}).get('content')}\n"
+                    s_data = json.loads(context.search_results_json)
+                    for res in s_data.get("results", []):
+                        memory_section += f"    - [Related]: {res.get('memory', {}).get('content')}\n"
                 except: pass
-
             if context.recent_memories_json:
                 try:
                     recent_data = json.loads(context.recent_memories_json)
-                    if recent_data.get("memories"):
-                        memory_section += "\n    [Recent History]:\n"
-                        for mem in recent_data["memories"]:
-                            memory_section += f"    - [{mem.get('timestamp')}] {mem.get('content')}\n"
+                    for mem in recent_data.get("memories", []):
+                        memory_section += f"    - [Recent]: {mem.get('content')}\n"
                 except: pass
-        
-        # ★ [수정] f-string 안에서 join을 쓰지 않도록 미리 변수로 만듭니다.
-        quest_giver_info_str = "\n    ".join(elements)
-        
+
+        quest_giver_str = "\n    ".join(elements)
+
         return f"""
-    You are a Master Quest Designer. Create a quest with strong narrative causality.
+    You are a Master Quest Designer for a **Medieval Fantasy RPG**.
+    
+    *** WORLD STORY & LORE ***
+    {story_context}
     
     {player_theme_section}
     {memory_section}
     
     *** QUEST GIVER ***
-    {quest_giver_info_str}
+    {quest_giver_str}
 
-    *** INGREDIENTS (Use logic to pick step order) ***
-    {ingredients_str}
+    *** AVAILABLE RESOURCES (MENU) ***
+    {resources_str}
 
-    *** CRITICAL RULES FOR CAUSALITY ***
-    {theme_rules}
+    *** CRITICAL RULES ***
+    {theme_rule}
 
-    1. **The "Bridge" Rule (Causality)**: 
+    1. **Intelligent Selection**: 
+       - From the `AVAILABLE RESOURCES` list above, **YOU (the AI) MUST SELECT 0 to 3 items** that best fit the Theme and Story.
+       - Do NOT use everything. Only use what makes sense.
+       - If the Player Input implies fighting, pick a Monster.
+       - If the Player Input implies exploration, pick a Dungeon.
+       - Always include the 'Target NPC' if one is listed.
+
+    2. **The "Bridge" Rule (Causality)**: 
        - Every dialogue MUST explain *why* the player needs to do the NEXT objective.
-       - **BAD**: "Go kill the Goblin." (No reason)
-       - **GOOD**: "That Goblin swallowed the medicine I need! Please cut it open and bring it back." (Explains the KILL step)
-       - **GOOD**: "I heard Aura knows where the secret entrance is. Go ask her." (Explains the TALK step)
+       - Connect the selected resources to the Quest Giver's problem and the World Lore.
 
-    2. **Mandatory Structure**:
-       - **Step 1**: Interaction with Quest Giver (Reaction to Player Input + Initial Problem).
-       - **Middle Steps**: Use the Ingredients (Monster/Dungeon/NPC). Chain them logically.
-       - **Final Step (Resolution)**: YOU MUST include a final `TALK` step returning to the Quest Giver (`{context.quest_giver_npc_id}`).
-         - The dialogue here should wrap up the story, express gratitude (or anger), and reference the Player Input one last time.
+    3. **Mandatory Structure**:
+       - **Step 1**: Interaction with Quest Giver.
+       - **Middle Steps**: Steps for the resources YOU SELECTED (Kill X, Go to Y, Talk to Z).
+       - **Final Step**: MUST return to Quest Giver (`{context.quest_giver_npc_id}`).
 
-    3. **JSON Format Rules**:
-       - KILL type -> `target_monster_id`
-       - DUNGEON type -> `target_dungeon_id`
-       - TALK type -> `target_npc_id`
-       - GOTO type -> `target_location_id`
+    4. **JSON Keys**:
+       - KILL -> `target_monster_id`
+       - DUNGEON -> `target_dungeon_id`
+       - TALK -> `target_npc_id`
+       - GOTO -> `target_location_id`
 
-    4. **Output**: A single JSON object with `quest_data` and `memory_data`.
-    5. **Language**: KOREAN ONLY.
+    5. **Output**: A single JSON object with `quest_data` and `memory_data`.
+    6. **Language**: KOREAN ONLY. Use a tone appropriate for the Medieval Fantasy setting.
 
     *** JSON OUTPUT FORMAT ***
     {QUEST_JSON_FORMAT_EXAMPLE}
