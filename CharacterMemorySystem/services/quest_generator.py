@@ -57,6 +57,11 @@ class QuestContext(BaseModel):
     monster_ids: List[str]
     monster_names: List[str]
 
+    # Landmarks (arrays)
+    landmark_ids: List[str]
+    landmark_names: List[str]
+    landmark_descriptions: List[str]
+
     # NPC relationships
     """
       "relations": [
@@ -283,23 +288,30 @@ class QuestGeneratorService:
         # ==================================================================
         # 파이썬이 고르지 않고, "전체 목록"을 문자열로 만듭니다.
         
-        available_resources_list = []
+        interaction_available_resources_list = []
         
         # 1. Target NPC (Must be included as an option)
         if selected_npc_str:
-            available_resources_list.append(selected_npc_str)
+            interaction_available_resources_list.append(selected_npc_str)
             
         # 2. All Available Dungeons
         if context.dungeon_ids:
             for i in range(len(context.dungeon_ids)):
-                available_resources_list.append(f"- [DUNGEON] {context.dungeon_names[i]} (ID: {context.dungeon_ids[i]})")
+                interaction_available_resources_list.append(f"- [DUNGEON] {context.dungeon_names[i]} (ID: {context.dungeon_ids[i]})")
                 
         # 3. All Available Monsters
         if context.monster_ids:
             for i in range(len(context.monster_ids)):
-                available_resources_list.append(f"- [MONSTER] {context.monster_names[i]} (ID: {context.monster_ids[i]})")
+                interaction_available_resources_list.append(f"- [MONSTER] {context.monster_names[i]} (ID: {context.monster_ids[i]})")
         
-        resources_str = "\n".join(available_resources_list)
+        interaction_unavailable_resources_list = []
+        # 1. All unavailable Landmarks
+        if context.landmark_ids:
+            for i in range(len(context.landmark_ids)):
+                interaction_unavailable_resources_list.append(f"- [LANDMARK] {context.landmark_names[i]} (ID: {context.landmark_ids[i]}) (Description: {context.landmark_descriptions[i]})")
+
+        resources_str = "\n".join(interaction_available_resources_list)
+        interaction_unavailable_resources_str = "\n".join(interaction_unavailable_resources_list)
 
         # ==================================================================
         # 3. PROMPT CONSTRUCTION
@@ -361,6 +373,9 @@ class QuestGeneratorService:
     *** AVAILABLE RESOURCES (MENU) ***
     {resources_str}
 
+    *** INTERACTION UNAVAILABLE RESOURCES (CANNOT INTERACT) ***
+    {interaction_unavailable_resources_str}
+
     *** CRITICAL RULES ***
     {theme_rule}
 
@@ -370,6 +385,12 @@ class QuestGeneratorService:
        - If the Player Input implies fighting, pick a Monster.
        - If the Player Input implies exploration, pick a Dungeon.
        - Always include the 'Target NPC' if one is listed.
+
+    1-2. **Exclusion of Unavailable Resources**:
+        - You can use the 'INTERACTION UNAVAILABLE RESOURCES' list for story flavor, but you CANNOT make them direct objectives. 
+        - It means you cannot have objectives like "Go to LANDMARK" or "Talk to LANDMARK".
+        - But you can mention them in dialogues or quest summaries.
+        - For example, some NPC has a shack. Shack is a landmark. You can make a dialogue like "I live near the old shack, and I need to fix it. Can you help me?" And you can make an objective like "Talk to NPC to get wood planks to fix the shack.", but you cannot make an objective like "Go to the shack and fix it."
 
     2. **The "Bridge" Rule (Causality)**: 
        - Every dialogue MUST explain *why* the player needs to do the NEXT objective.

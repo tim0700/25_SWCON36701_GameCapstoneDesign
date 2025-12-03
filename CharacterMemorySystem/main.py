@@ -362,7 +362,7 @@ if __name__ == "__main__":
     Run the application using uvicorn.
 
     For development: python main.py
-    For production: uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
+    For production: uvicorn main:app --host 0.0.0.0 --port 8123 --workers 4
     """
     uvicorn.run(
         app,

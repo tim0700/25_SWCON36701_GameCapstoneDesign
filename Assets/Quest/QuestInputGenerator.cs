@@ -23,6 +23,9 @@ public class QuestContextData
     public string[] dungeon_names;
     public string[] monster_ids;
     public string[] monster_names;
+    public string[] landmark_ids;
+    public string[] landmark_names;
+    public string[] landmark_descriptions;
     public List<NpcRelationEntry> relations;
     public string player_dialogue;
 }
@@ -119,9 +122,33 @@ public class QuestInputGenerator : MonoBehaviour
                     }
                 }
 
-                contextData.monster_ids = monsterIDsList.ToArray();
+                contextData.monster_ids = monsterIDsList.ToArray(); 
                 contextData.monster_names = monsterNamesList.ToArray();
             }
+
+            // 추가: 3-5. 랜드마크 정보 조회 (List 사용)
+            using (IDbCommand cmd = dbConnection.CreateCommand())
+            {
+                List<string> landmarkIDsList = new List<string>();
+                List<string> landmarkNamesList = new List<string>();
+                List<string> landmarkDescriptionsList = new List<string>();
+
+                cmd.CommandText = $"SELECT LANDID, NAME, DESCRIPTION FROM LANDMARK WHERE LOCID = '{contextData.location_id}'";
+                using (IDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        landmarkIDsList.Add(reader.GetString(0));
+                        landmarkNamesList.Add(reader.GetString(1));
+                        landmarkDescriptionsList.Add(reader.GetString(2));
+                    }
+                }
+
+                contextData.landmark_ids = landmarkIDsList.ToArray(); 
+                contextData.landmark_names = landmarkNamesList.ToArray();
+                contextData.landmark_descriptions = landmarkDescriptionsList.ToArray();
+            }
+
 
             // 4. 퀘스트 제공자 정보 조회
             using (IDbCommand cmd = dbConnection.CreateCommand())
