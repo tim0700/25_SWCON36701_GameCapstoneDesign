@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class DatabaseInitializer : MonoBehaviour
 {
-    void Start()
+    void Awake()
     {
         InitializeDatabase();
     }
@@ -103,6 +103,18 @@ public class DatabaseInitializer : MonoBehaviour
                 )";
                 cmd.ExecuteNonQuery();
 
+                // LANDMAARK 테이블 생성
+                cmd.CommandText = @"
+                CREATE TABLE IF NOT EXISTS LANDMARK (
+                    LANDID	TEXT NOT NULL UNIQUE,
+                    NAME	TEXT,
+                    DESCRIPTION TEXT,
+                    LOCID	TEXT,
+                    PRIMARY KEY(LANDID),
+                    FOREIGN KEY(LOCID) REFERENCES LOC(LOCID)
+                )";
+                cmd.ExecuteNonQuery();
+
                 // NPC_RELATION 테이블 생성
                 cmd.CommandText = @"
                 CREATE TABLE NPC_RELATION (
@@ -114,6 +126,50 @@ public class DatabaseInitializer : MonoBehaviour
                     FOREIGN KEY(NPC2ID) REFERENCES NPC(NPCID)
                 )";
                 cmd.ExecuteNonQuery();
+
+                //여기서부터 하드 코딩
+                // 하드코딩된 관계 데이터 삽입 예시
+                cmd.CommandText = "INSERT OR REPLACE INTO NPC_RELATION (NPC1ID, NPC2ID, RELATION) VALUES (@npc1, @npc2, @relation);";
+                cmd.Parameters.Clear();
+
+                var pNpc1 = cmd.CreateParameter();
+                pNpc1.ParameterName = "@npc1";
+                pNpc1.Value = "NPC001_Amber";
+                cmd.Parameters.Add(pNpc1);
+
+                var pNpc2 = cmd.CreateParameter();
+                pNpc2.ParameterName = "@npc2";
+                pNpc2.Value = "NPC002_Aura";
+                cmd.Parameters.Add(pNpc2);
+
+                var pRelation = cmd.CreateParameter();
+                pRelation.ParameterName = "@relation";
+                pRelation.Value = "friend";
+                cmd.Parameters.Add(pRelation);
+
+                cmd.ExecuteNonQuery();
+
+                // 추가 관계도 반복해서 삽입 가능
+                cmd.CommandText = "INSERT OR REPLACE INTO NPC_RELATION (NPC1ID, NPC2ID, RELATION) VALUES (@npc1, @npc2, @relation);";
+                cmd.Parameters.Clear();
+
+                var pNpc1_2 = cmd.CreateParameter();
+                pNpc1_2.ParameterName = "@npc1";
+                pNpc1_2.Value = "NPC001_Amber";
+                cmd.Parameters.Add(pNpc1_2);
+
+                var pNpc2_2 = cmd.CreateParameter();
+                pNpc2_2.ParameterName = "@npc2";
+                pNpc2_2.Value = "NPC003_Katie";
+                cmd.Parameters.Add(pNpc2_2);
+
+                var pRelation_2 = cmd.CreateParameter();
+                pRelation_2.ParameterName = "@relation";
+                pRelation_2.Value = "rival";
+                cmd.Parameters.Add(pRelation_2);
+
+                cmd.ExecuteNonQuery();
+
             }
 
             // LOCATION 데이터 삽입
@@ -146,6 +202,7 @@ public class DatabaseInitializer : MonoBehaviour
                     // 한 Location에 속한 Dungeon과 Monster도 함께 삽입
                     int duncounter = 1;
                     int moncounter = 1;
+                    int landcounter = 1;
                     for(int i = 0; i < loc.transform.childCount; i++)
                     {
                         GameObject gameObjectInLoc = loc.transform.GetChild(i).gameObject;
@@ -203,6 +260,38 @@ public class DatabaseInitializer : MonoBehaviour
 
                             cmd.ExecuteNonQuery();
                             moncounter++;
+                        }
+                        else if (gameObjectInLoc.CompareTag("Landmark"))
+                        {
+                            // LANDMARK 삽입
+                            string landName = gameObjectInLoc.name;
+                            string landId = $"LAND{landcounter:000}_{landName}";
+
+                            cmd.CommandText = "INSERT OR REPLACE INTO LANDMARK (LANDID, NAME, DESCRIPTION, LOCID) VALUES (@landId, @landName, @landDesc, @locId);";
+                            cmd.Parameters.Clear();
+
+                            var plandId = cmd.CreateParameter();
+                            plandId.ParameterName = "@landId";
+                            plandId.Value = landId;
+                            cmd.Parameters.Add(plandId);
+
+                            var plandName = cmd.CreateParameter();
+                            plandName.ParameterName = "@landName";
+                            plandName.Value = landName;
+                            cmd.Parameters.Add(plandName);
+
+                            var plandDesc = cmd.CreateParameter();
+                            plandDesc.ParameterName = "@landDesc";
+                            plandDesc.Value = "";
+                            cmd.Parameters.Add(plandDesc);
+
+                            var plocId3 = cmd.CreateParameter();
+                            plocId3.ParameterName = "@locId";
+                            plocId3.Value = locId;
+                            cmd.Parameters.Add(plocId3);
+
+                            cmd.ExecuteNonQuery();
+                            landcounter++;
                         }
                         
                     }

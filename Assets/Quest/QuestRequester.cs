@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using TMPro;
 using System; // for nullable handling
+using Newtonsoft.Json;
 
 public class QuestRequester : MonoBehaviour
 {
@@ -30,6 +31,8 @@ public class QuestRequester : MonoBehaviour
     {
         public string recent_memories_json;
         public string search_results_json;
+
+        public new List<List<string>> relations;
     }
 
     // =================================================================================
@@ -53,6 +56,15 @@ public class QuestRequester : MonoBehaviour
             return;
         }
 
+        List<List<string>> convertedRelations = new List<List<string>>();
+        if (contextData.relations != null)
+        {
+            foreach (var entry in contextData.relations)
+            {
+                convertedRelations.Add(new List<string> { entry.npc_id, entry.relation });
+            }
+        }
+
         // 페이로드 생성: memories는 JSON 문자열로 포함 (서버에서 JSON.parse 필요)
         QuestRequestPayload payload = new QuestRequestPayload
         {
@@ -72,6 +84,11 @@ public class QuestRequester : MonoBehaviour
             dungeon_names = contextData.dungeon_names,
             monster_ids = contextData.monster_ids,
             monster_names = contextData.monster_names,
+            landmark_ids = contextData.landmark_ids,
+            landmark_names = contextData.landmark_names,
+            landmark_descriptions = contextData.landmark_descriptions,
+            player_dialogue = playerDialogue ?? "",
+            relations = convertedRelations,
             recent_memories_json = recentMemories != null ? JsonUtility.ToJson(recentMemories) : null,
             search_results_json = searchResults != null ? JsonUtility.ToJson(searchResults) : null
         };
@@ -86,7 +103,7 @@ public class QuestRequester : MonoBehaviour
     // 코루틴은 이제 페이로드 객체를 받음
     private IEnumerator FetchQuestFromServer(QuestRequestPayload payloadToSend)
     {
-        string contextJson = JsonUtility.ToJson(payloadToSend);
+        string contextJson = JsonConvert.SerializeObject(payloadToSend);
         Debug.Log($"[QuestRequester] 서버로 전송할 JSON: {contextJson}");
 
         using (UnityWebRequest webRequest = new UnityWebRequest(serverUrl, "POST"))
