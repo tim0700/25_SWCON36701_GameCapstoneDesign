@@ -1,0 +1,22 @@
+# Core Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+
+# Data Validation
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# Google Cloud & Vertex AI
+google-cloud-aiplatform>=1.38.0
+google-genai>=0.2.0
+
+# Environment Management
+python-dotenv>=1.0.0
+
+# HTTP Client (for testing)
+httpx>=0.25.0
+
+# Development Dependencies (optional, can be moved to requirements-dev.txt)
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0

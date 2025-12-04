@@ -1,45 +1,113 @@
+using System.Collections;
+using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.Assertions.Must;
+using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
-    // Å¸°Ù ¿·À¸·Î ÀÌµ¿ÇÒ ¶§ÀÇ °Å¸® ¿ÀÇÁ¼Â
     public float offset = 1.5f;
+    private QuestRequester questRequester;
+    private QuestStartTester questStartTester;
+
+    private PlayerInputHandler inputHandler;
+
+    void Awake()
+    {
+        inputHandler = FindFirstObjectByType<PlayerInputHandler>();   
+    }
+    void Start()
+    {
+        questRequester = FindFirstObjectByType<QuestRequester>();
+        questStartTester = FindFirstObjectByType<QuestStartTester>();
+    }
 
     void Update()
     {
-        // ¸¶¿ì½º ¿ŞÂÊ ¹öÆ° Å¬¸¯ °¨Áö
         if (Input.GetMouseButtonDown(0))
         {
-            // ¸¶¿ì½º Å¬¸¯ À§Ä¡¸¦ ¿ùµå ÁÂÇ¥·Î º¯È¯
             Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-
-            // Å¬¸¯ÇÑ À§Ä¡¿¡ Äİ¶óÀÌ´õ°¡ ÀÖ´ÂÁö È®ÀÎÇÏ±â À§ÇØ Ray ¹ß»ç
             RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
 
-            // ¸¸¾à Äİ¶óÀÌ´õ¿¡ ¸Â¾Ò´Ù¸é (¹«¾ğ°¡¸¦ Å¬¸¯Çß´Ù¸é)
             if (hit.collider != null)
             {
-                // Å¬¸¯ÇÑ ¿ÀºêÁ§Æ®¿¡¼­ CharacterInfo ÄÄÆ÷³ÍÆ®¸¦ °¡Á®¿È
-                CharacterInfo targetCharacter = hit.collider.GetComponent<CharacterInfo>();
-
-                // CharacterInfo ÄÄÆ÷³ÍÆ®°¡ ÀÖ´Ù¸é (Å¸°Ù Ä³¸¯ÅÍ¸¦ Å¬¸¯Çß´Ù¸é)
-                if (targetCharacter != null)
+                // 1. NPCë¥¼ í´ë¦­í–ˆëŠ”ì§€ í™•ì¸ (CharacterInfo ëŒ€ì‹  NPC ì‚¬ìš©)
+                NPC targetNPC = hit.collider.GetComponent<NPC>();
+                if (targetNPC != null)
                 {
-                    // Å¸°Ù Ä³¸¯ÅÍ ¿·À¸·Î ÇÃ·¹ÀÌ¾î À§Ä¡ ÀÌµ¿
-                    // Å¸°ÙÀÇ ¿À¸¥ÂÊ¿¡ ÀÚ¸®¸¦ Àâµµ·Ï À§Ä¡ ¼³Á¤
-                    Vector2 targetPosition = hit.collider.transform.position;
-                    transform.position = new Vector2(targetPosition.x + offset, targetPosition.y);
-
-                    // Å¸°Ù Ä³¸¯ÅÍÀÇ ID¸¦ ÄÜ¼Ö¿¡ Ãâ·Â
-                    Debug.Log("Clicked Character ID: " + targetCharacter.characterID);
+                    HandleNpcClick(targetNPC);
+                    return; // NPC í´ë¦­ ì²˜ë¦¬ ì™„ë£Œ
                 }
+
+                // 2. ì¥ì†Œ/ëª¬ìŠ¤í„°/ë˜ì „ì„ í´ë¦­í–ˆëŠ”ì§€ í™•ì¸
+                QuestLocation targetLocation = hit.collider.GetComponent<QuestLocation>();
+                if (targetLocation != null)
+                {
+                    HandleLocationClick(targetLocation);
+                    return; // ì¥ì†Œ í´ë¦­ ì²˜ë¦¬ ì™„ë£Œ
+                }
+
+                // Portalì€ ì´ì œ OnTriggerEnter2Dë¡œ ìë™ ì‘ë™ (í´ë¦­ ë¶ˆí•„ìš”)
             }
-            // Äİ¶óÀÌ´õ¿¡ ¸ÂÁö ¾Ê¾Ò´Ù¸é (¹è°æÀ» Å¬¸¯Çß´Ù¸é)
             else
             {
-                // Å¬¸¯ÇÑ ¿ùµå ÁÂÇ¥·Î ÇÃ·¹ÀÌ¾î À§Ä¡¸¦ ¹Ù·Î ÀÌµ¿
+                // ë¹ˆ ê³µê°„ì„ í´ë¦­í•˜ë©´ í”Œë ˆì´ì–´ ì´ë™
                 transform.position = new Vector2(mousePosition.x, mousePosition.y);
             }
         }
+    }
+
+    void HandleNpcClick(NPC target)
+    {
+        // 1. í”Œë ˆì´ì–´ë¥¼ NPC ì˜†ìœ¼ë¡œ ì´ë™
+        Vector2 targetPosition = target.transform.position;
+        transform.position = new Vector2(targetPosition.x + offset, targetPosition.y);
+
+        // 2. í€˜ìŠ¤íŠ¸ ì§„í–‰ ìƒíƒœ í™•ì¸
+        if (questStartTester != null && questStartTester.isQuestInProgress)
+        {
+            // --- í€˜ìŠ¤íŠ¸ê°€ ì§„í–‰ ì¤‘ì¼ ë•Œ ---
+            // í€˜ìŠ¤íŠ¸ ë§¤ë‹ˆì €ì—ê²Œ "TALK" ì´ë²¤íŠ¸ë¥¼ ì•Œë¦½ë‹ˆë‹¤.
+            Debug.Log($"[PlayerController] í€˜ìŠ¤íŠ¸ ì´ë²¤íŠ¸ ì•Œë¦¼: TALK {target.npcId}");
+            QuestStartTester.Instance.NotifyEvent("TALK", target.npcId);
+        }
+        else if (questRequester != null)
+        {
+            // --- í€˜ìŠ¤íŠ¸ê°€ ì—†ì„ ë•Œ (ìƒˆ í€˜ìŠ¤íŠ¸ ìƒì„± ì‹œë„) ---
+            // QuestRequesterì—ê²Œ ì´ NPC IDë¡œ í€˜ìŠ¤íŠ¸ ìƒì„±ì„ ìš”ì²­í•©ë‹ˆë‹¤.
+            StartCoroutine(WaitForInputCompletion(target));
+        }
+    }
+
+    void HandleLocationClick(QuestLocation target)
+    {
+        // 1. í”Œë ˆì´ì–´ë¥¼ ì¥ì†Œë¡œ ì´ë™
+        transform.position = target.transform.position;
+
+        // 2. í€˜ìŠ¤íŠ¸ê°€ ì§„í–‰ ì¤‘ì¼ ë•Œë§Œ ì²˜ë¦¬
+        if (questStartTester != null && questStartTester.isQuestInProgress)
+        {
+            string eventType = target.eventType.ToString(); // GOTO, KILL, DUNGEON
+            string entityId = target.entityId;
+
+            Debug.Log($"[PlayerController] í€˜ìŠ¤íŠ¸ ì´ë²¤íŠ¸ ì•Œë¦¼: {eventType} {entityId}");
+            QuestStartTester.Instance.NotifyEvent(eventType, entityId);
+        }
+    }
+
+    private IEnumerator WaitForInputCompletion(NPC target)
+    {
+        inputHandler.StartPlayerInput();
+
+        yield return new WaitUntil(() => !inputHandler.IsInputting);
+
+        // ì…ë ¥ì´ ì™„ë£Œëœ í›„ ì²˜ë¦¬
+        string playerInput = inputHandler.GetLastInput;
+        Debug.Log($"í”Œë ˆì´ì–´ ì…ë ¥ ì™„ë£Œ: {playerInput}");
+
+        // CharacterMemorySystemì—ì„œ ë©”ëª¨ë¦¬ ì¡°íšŒ + í€˜ìŠ¤íŠ¸ ìƒì„± (í†µí•© ì›Œí¬í”Œë¡œìš°)
+        Debug.Log($"[PlayerController] ë©”ëª¨ë¦¬ ì¡°íšŒ ë° í€˜ìŠ¤íŠ¸ ìƒì„± ì‹œì‘: {target.npcId}");
+        yield return StartCoroutine(questRequester.FetchMemoriesAndCreateQuest(target.npcId, playerInput));
     }
 }

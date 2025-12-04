@@ -73,3 +73,70 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# ============================================
+# Python Backend (NPC Character Generator)
+# ============================================
+
+# Python cache files
+Backend/__pycache__/
+Backend/**/__pycache__/
+Backend/*.py[cod]
+Backend/**/*.py[cod]
+Backend/*$py.class
+Backend/**/*$py.class
+Backend/*.so
+Backend/**/*.so
+Backend/.Python
+
+# Virtual Environment - 절대 커밋하지 마세요!
+Backend/venv/
+Backend/env/
+Backend/ENV/
+Backend/.venv/
+
+# Environment & Credentials - 매우 중요! 절대 커밋하지 마세요!
+Backend/.env
+Backend/*.json
+!Backend/app/templates/*.json
+Backend/my-project-*.json
+Backend/*-credentials.json
+Backend/*service-account*.json
+Backend/credentials/
+
+# Generated Data & Logs
+Backend/data/
+Backend/data/npcs/
+Backend/data/npcs/*.json
+Backend/logs/
+Backend/*.log
+Backend/**/*.log
+
+# Python build & distribution
+Backend/build/
+Backend/dist/
+Backend/*.egg-info/
+Backend/**/*.egg-info/
+
+# Testing & Coverage
+Backend/.pytest_cache/
+Backend/.coverage
+Backend/htmlcov/
+Backend/.tox/
+
+# IDE settings (if not already covered above)
+Backend/.vscode/
+Backend/.idea/
+
+# OS files
+Backend/.DS_Store
+Backend/Thumbs.db
+Backend/*.Zone.Identifier
+
+# Documentation build
+Backend/docs/_build/
+CharacterMemorySystem/my-service-account-key.json
+
+
+*.plastic
+/.plastic
