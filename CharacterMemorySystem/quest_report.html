@@ -1,0 +1,964 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Quest Generation Comparative Report</title>
+        <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f4f4f9; color: #333; }
+            h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
+            .container { max-width: 1000px; margin: 0 auto; }
+            .card { background: white; padding: 25px; margin-bottom: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-left: 5px solid #3498db; }
+            .card.fail { border-left-color: #e74c3c; }
+            .meta { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
+            .meta-info { font-size: 0.95em; color: #555; }
+            .tag { display: inline-block; padding: 4px 10px; border-radius: 15px; font-size: 0.85em; color: white; margin-right: 8px; font-weight: bold; }
+            .tag-model { background-color: #3498db; }
+            .tag-keyword { background-color: #27ae60; }
+            .tag-time { background-color: #f39c12; }
+            .quest-title { font-size: 1.4em; font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
+            .quest-summary { color: #7f8c8d; font-style: italic; margin-bottom: 20px; line-height: 1.5; }
+            .steps-container { display: flex; flex-direction: column; gap: 10px; }
+            .step { padding: 15px; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef; }
+            .step-header { font-weight: bold; color: #e67e22; margin-bottom: 5px; }
+            .step-desc { margin-bottom: 8px; }
+            .dialogue-box { background-color: #fff3cd; padding: 8px 12px; border-radius: 6px; font-size: 0.95em; color: #856404; border: 1px solid #ffeeba; }
+            .error-box { color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 5px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>📜 모델별 퀘스트 생성 비교 리포트</h1>
+    
+        <div class="card fail">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 2.5 Flash Lite 4080</span>
+                    <span class="tag tag-keyword">Keyword: 평화</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 13796ms</span>
+                    <span>📝 0 chars</span>
+                </div>
+            </div>
+            <div class="error-box">❌ 생성 실패: HTTP 500</div>
+        </div>
+        
+        <div class="card">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 2.5 Flash Lite 4080</span>
+                    <span class="tag tag-keyword">Keyword: 사랑</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 8196ms</span>
+                    <span>📝 472 chars</span>
+                </div>
+            </div>
+            
+            <div class="quest-title">사랑하는 이의 흔적</div>
+            <div class="quest-summary">사라진 연인의 흔적을 찾기 위해 숲 속 깊은 동굴로 향하는 퀘스트.</div>
+            <div class="steps-container">
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 1</div>
+                        <div class="step-desc">사라진 연인의 흔적에 대해 앰버와 대화하세요.</div>
+                        <div class="dialogue-box">🗣️ "이 숲이 점점 위험해지고 있어. 내 사랑하는 이가 며칠 전부터 보이지 않아. 마지막으로 본 건 숲 입구 쪽이었는데, 혹시 그쪽에서 무언가 이상한 점을 보았는지 말해줄 수 있겠나?"</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[KILL] Step 2</div>
+                        <div class="step-desc">숲에서 연인을 위협할 만한 고블린들을 처치하세요.</div>
+                        <div class="dialogue-box">🗣️ "고블린들이 요즘 부쩍 난폭해졌어. 내 사랑하는 이가 그들에게 해를 입었을지도 몰라. 제발 그 녀석들을 좀 처리해 줘. 그래야 안심하고 더 깊은 곳을 수색할 수 있을 테니."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[DUNGEON] Step 3</div>
+                        <div class="step-desc">고블린들이 숨어있을 법한 동굴을 조사하세요.</div>
+                        <div class="dialogue-box">🗣️ "고블린들을 물리쳤다니 다행이군. 하지만 그 녀석들이 동굴 깊숙한 곳에 숨어있다는 소문도 있어. 혹시 내 사랑하는 이가 그 동굴 안으로 들어갔을지도 모르니, 한번 살펴봐 주겠나? 그곳에서 무언가 단서를 찾을 수 있을지도 모르네."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 4</div>
+                        <div class="step-desc">앰버에게 조사 결과를 보고하세요.</div>
+                        <div class="dialogue-box">🗣️ "동굴 조사를 마쳤습니다. (결과 보고)"</div>
+                    </div>
+                    </div>
+            
+        </div>
+        
+        <div class="card">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 2.5 Flash Lite 4080</span>
+                    <span class="tag tag-keyword">Keyword: 보물</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 7438ms</span>
+                    <span>📝 365 chars</span>
+                </div>
+            </div>
+            
+            <div class="quest-title">숲 속의 숨겨진 보물</div>
+            <div class="quest-summary">사냥꾼 앰버는 다가오는 일식 때문에 숲이 위험해지고 있다고 경고하며, 고대 유적에 숨겨진 보물을 찾아달라고 플레이어에게 요청합니다.</div>
+            <div class="steps-container">
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 1</div>
+                        <div class="step-desc">사냥꾼 앰버와 대화하세요.</div>
+                        <div class="dialogue-box">🗣️ "이 숲이 점점 더 위험해지고 있어. 다가오는 일식 때문에 몬스터들이 난폭해지고 있거든. 고대의 배신으로 무너진 왕국에 숨겨진 보물이 있다고 들었는데, 그걸 찾아서 이 불안을 잠재울 무언가를 얻어야겠어. 혹시 그 보물을 찾을 수 있겠나?"</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[DUNGEON] Step 2</div>
+                        <div class="step-desc">고대 왕국 유적(동굴)을 탐험하고 보물을 찾으세요.</div>
+                        <div class="dialogue-box">🗣️ "그 보물은 오래된 동굴 깊숙한 곳에 있다고 해. 몬스터들이 들끓을 테니 조심해야 할 거야. 동굴 안에서 보물을 찾으면 내게 가져다주게."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 3</div>
+                        <div class="step-desc">보물을 가지고 사냥꾼 앰버에게 돌아가세요.</div>
+                        <div class="dialogue-box">🗣️ "보물을 찾았다. 앰버에게 돌아가야겠다."</div>
+                    </div>
+                    </div>
+            
+        </div>
+        
+        <div class="card">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 2.5 Flash 4080</span>
+                    <span class="tag tag-keyword">Keyword: 마법</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 34678ms</span>
+                    <span>📝 394 chars</span>
+                </div>
+            </div>
+            
+            <div class="quest-title">숲의 기이한 마법</div>
+            <div class="quest-summary">숲에서 벌어지는 기이한 마법 현상을 조사하고, 그 원인을 찾아 해결하는 퀘스트.</div>
+            <div class="steps-container">
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 1</div>
+                        <div class="step-desc">벌목꾼 아우라에게 숲에서 벌어지는 이상한 일에 대해 물어보세요.</div>
+                        <div class="dialogue-box">🗣️ "요즘 숲이 심상치 않아. 짐승들이 미쳐 날뛰고, 이상한 기운이 느껴져. 벌목꾼 아우라가 동굴 근처에서 뭔가 봤다고 하는데, 너무 겁에 질려 있어. 자네가 가서 무슨 일인지 알아봐 줘."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[DUNGEON] Step 2</div>
+                        <div class="step-desc">아우라가 언급한 동굴을 조사하여 마법의 근원을 찾으세요.</div>
+                        <div class="dialogue-box">🗣️ "아우라가 말한 동굴이군. 저 안에서 마법의 기운이 느껴져. 조심해야겠어."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[KILL] Step 3</div>
+                        <div class="step-desc">동굴 안의 마법에 홀린 고블린들을 처치하세요.</div>
+                        <div class="dialogue-box">🗣️ "이 고블린들을 처치해야만 마법의 근원에 더 가까이 갈 수 있을 거야."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 4</div>
+                        <div class="step-desc">앰버에게 숲과 동굴에서 벌어진 일에 대해 보고하세요.</div>
+                        <div class="dialogue-box">🗣️ "앰버, 숲의 마법은 동굴에서 시작된 것 같습니다. 고블린들이 마법에 홀려 날뛰고 있었어요."</div>
+                    </div>
+                    </div>
+            
+        </div>
+        
+        <div class="card">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 2.5 Flash 4080</span>
+                    <span class="tag tag-keyword">Keyword: 마법</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 31545ms</span>
+                    <span>📝 748 chars</span>
+                </div>
+            </div>
+            
+            <div class="quest-title">숲의 어둠 마법</div>
+            <div class="quest-summary">앰버의 요청으로 숲의 이상 현상을 조사하고, 어둠의 마법에 물든 고블린들을 처치하며 동굴 속 마법의 근원을 찾아 제거하는 퀘스트.</div>
+            <div class="steps-container">
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 1</div>
+                        <div class="step-desc">벌목꾼 아우라에게 숲에서 벌어진 이상한 일에 대해 물어보세요.</div>
+                        <div class="dialogue-box">🗣️ "요즘 숲이 심상치 않아. 고블린들이 예전과는 다르게 사납고, 숲 깊은 곳에서 이상한 기운이 느껴져. 어둠의 마법과 관련된 것 같기도 해. 벌목꾼 아우라가 그 근처에서 일하는 걸 봤는데, 혹시 뭔가 목격했을지도 몰라. 가서 그녀에게 무슨 일이 있었는지 물어봐 줘."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 2</div>
+                        <div class="step-desc">아우라에게 숲의 이상 현상에 대해 자세히 물어보세요.</div>
+                        <div class="dialogue-box">🗣️ "무... 무슨 일이시죠...? 저... 저는 아무것도 몰라요. (두려움에 떨며)"</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[KILL] Step 3</div>
+                        <div class="step-desc">동굴 근처에서 마법에 홀린 고블린들을 처치하세요.</div>
+                        <div class="dialogue-box">🗣️ "아우라가 말한 고블린들이군. 마법의 기운이 느껴져... 놈들을 처치해야겠어."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[DUNGEON] Step 4</div>
+                        <div class="step-desc">동굴 안으로 들어가 어둠의 마법의 근원을 조사하세요.</div>
+                        <div class="dialogue-box">🗣️ "고블린들은 처리했지만, 이 동굴 안에서 느껴지는 어둠의 마법은 여전해. 근원을 찾아야 해."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 5</div>
+                        <div class="step-desc">앰버에게 동굴에서 발견한 것을 보고하세요.</div>
+                        <div class="dialogue-box">🗣️ "돌아왔군. 동굴에서 무엇을 발견했나? 어둠의 마법의 근원을 제거했나?"</div>
+                    </div>
+                    </div>
+            
+        </div>
+        
+        <div class="card">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 2.5 Flash 4080</span>
+                    <span class="tag tag-keyword">Keyword: 사랑</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 31371ms</span>
+                    <span>📝 478 chars</span>
+                </div>
+            </div>
+            
+            <div class="quest-title">앰버의 잃어버린 마음</div>
+            <div class="quest-summary">앰버는 벌목꾼 아우라가 숲에서 돌아오지 않아 깊이 걱정하고 있습니다. 숲을 수색하여 아우라를 찾아 안전하게 돌아오도록 도와주세요.</div>
+            <div class="steps-container">
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 1</div>
+                        <div class="step-desc">사냥꾼 앰버와 대화하여 아우라에 대한 정보를 얻으세요.</div>
+                        <div class="dialogue-box">🗣️ "자네, 잠시 이야기 좀 할 수 있겠나? 벌목꾼 아우라가 아직 숲에서 돌아오지 않았어. 평소 같으면 벌써 왔을 시간인데… 무슨 일이 생긴 건 아닌지 너무 걱정돼. 자네가 숲으로 가서 아우라를 찾아봐 줄 수 있겠나? 아마 오래된 나무 근처에서 작업하고 있을 거야."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[DUNGEON] Step 2</div>
+                        <div class="step-desc">위험해진 숲(woods)을 수색하여 아우라를 찾으세요.</div>
+                        <div class="dialogue-box">🗣️ "앰버의 걱정이 깊어 보인다. 숲이 위험해졌다고 하니 서둘러 아우라를 찾아야겠다."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[KILL] Step 3</div>
+                        <div class="step-desc">아우라를 위협하는 고블린들을 처치하세요. (3마리)</div>
+                        <div class="dialogue-box">🗣️ "고블린들이 아우라를 노리고 있다! 서둘러 처리해야 해."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 4</div>
+                        <div class="step-desc">안전해진 아우라와 대화하세요.</div>
+                        <div class="dialogue-box">🗣️ "아우라, 괜찮으신가요? 앰버가 당신을 많이 걱정하고 있습니다."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 5</div>
+                        <div class="step-desc">앰버에게 돌아가 아우라의 소식을 전하세요.</div>
+                        <div class="dialogue-box">🗣️ "아우라가 무사하다는 소식을 앰버에게 전해야겠다."</div>
+                    </div>
+                    </div>
+            
+        </div>
+        
+        <div class="card">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 2.5 Pro 4080</span>
+                    <span class="tag tag-keyword">Keyword: 평화</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 75198ms</span>
+                    <span>📝 415 chars</span>
+                </div>
+            </div>
+            
+            <div class="quest-title">숲의 평화를 위하여</div>
+            <div class="quest-summary">사냥꾼 앰버는 다가오는 이클립스로 인해 숲의 평화가 깨지고 있음을 감지했습니다. 그녀는 플레이어에게 숲 깊은 곳의 벌목꾼 아우라와 대화하여 상황을 파악하고, 공격적으로 변한 고블린들을 처치해달라고 요청합니다.</div>
+            <div class="steps-container">
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 1</div>
+                        <div class="step-desc">벌목꾼 아우라와 대화하여 숲의 상황에 대해 알아보기</div>
+                        <div class="dialogue-box">🗣️ "요즘 숲이 이상해. 다가오는 이클립스 때문인지 흉포해진 짐승들도 늘었고... 평화가 깨지고 있어. 숲 깊은 곳에서 일하는 벌목꾼 아우라라면 뭔가 알지도 몰라. 그녀를 찾아가 봐주게."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[KILL] Step 2</div>
+                        <div class="step-desc">숲의 평화를 위협하는 고블린 처치 (0/5)</div>
+                        <div class="dialogue-box">🗣️ "아, 당신이 앰버가 보낸 분이군요... 훌쩍... 고블린 놈들이 갑자기 나타나 제 일터를 망쳐놨어요. 저 때문에 숲의 평화가 깨진 것 같아 두려워요. 제발 저놈들을 쫓아내 주세요!"</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 3</div>
+                        <div class="step-desc">앰버에게 돌아가 퀘스트 완료 보고하기</div>
+                        <div class="dialogue-box">🗣️ "(고블린을 처리했다. 이제 앰버에게 돌아가자.)"</div>
+                    </div>
+                    </div>
+            
+        </div>
+        
+        <div class="card">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 2.5 Pro 4080</span>
+                    <span class="tag tag-keyword">Keyword: 마법</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 62859ms</span>
+                    <span>📝 484 chars</span>
+                </div>
+            </div>
+            
+            <div class="quest-title">숲을 병들게 하는 주술</div>
+            <div class="quest-summary">사냥꾼 앰버는 숲에 퍼지는 사악한 마법의 기운을 걱정하고 있습니다. 그녀는 벌목꾼 아우라가 무언가 목격했다는 소문을 듣고, 플레이어에게 진상을 조사해달라고 요청합니다.</div>
+            <div class="steps-container">
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 1</div>
+                        <div class="step-desc">숲에 있는 벌목꾼 아우라와 대화하여 단서를 얻으세요.</div>
+                        <div class="dialogue-box">🗣️ "자네, 모험가인가? 이 숲이 점점 이상해지고 있어. 동물들은 겁에 질려 숨어버렸고, 불길한 기운이 감돌아. 곧 다가올 월식 때문인지... 아니면 다른 무언가 때문인지. 조용한 벌목꾼 아우라가 오래된 나무 근처에서 이상한 걸 봤다는군. 그녀에게 가서 무슨 일인지 알아봐 주게."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[KILL] Step 2</div>
+                        <div class="step-desc">아우라를 위협하는 고블린들을 처치하세요.</div>
+                        <div class="dialogue-box">🗣️ "네, 봤어요. 끔찍한 걸... 동굴 근처에서 고블린들이 이상한 의식을 치르고 있었어요. 보라색 빛이 번쩍이고... 알아들을 수 없는 주문을 외우더군요. 제발... 그 고블린들을 처리해주세요."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[DUNGEON] Step 3</div>
+                        <div class="step-desc">마법의 근원을 찾아 고블린 동굴을 조사하세요.</div>
+                        
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 4</div>
+                        <div class="step-desc">앰버에게 돌아가 퀘스트를 완료하세요.</div>
+                        <div class="dialogue-box">🗣️ "돌아왔군. 얼굴을 보니 일이 잘 해결된 모양이야. 무슨 일이었지?"</div>
+                    </div>
+                    </div>
+            
+        </div>
+        
+        <div class="card">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 2.5 Pro 4080</span>
+                    <span class="tag tag-keyword">Keyword: 보물</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 55636ms</span>
+                    <span>📝 443 chars</span>
+                </div>
+            </div>
+            
+            <div class="quest-title">고블린의 보물</div>
+            <div class="quest-summary">사냥꾼 앰버가 숲 속 동굴에 고블린들이 숨긴 보물에 대한 소문을 들었습니다. 나무꾼 아우라에게 자세한 정보를 얻고, 동굴을 조사하여 보물을 찾아오십시오.</div>
+            <div class="steps-container">
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 1</div>
+                        <div class="step-desc">숲에 있는 사냥꾼 앰버와 대화하십시오.</div>
+                        <div class="dialogue-box">🗣️ "자네, 돈 벌이에 관심 있나? 숲이 점점 위험해지고 있지만, 그만큼 기회도 있는 법이지. 조용한 나무꾼 아우라가 오래된 나무 근처에서 수상한 걸 봤다는 소문이 있어. 보물일지도 모르지. 하지만 난 내 자리를 비울 수 없어. 자네가 대신 아우라에게 가서 자세한 얘기를 들어봐 주게."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 2</div>
+                        <div class="step-desc">나무꾼 아우라에게 보물에 대한 정보를 물어보십시오.</div>
+                        <div class="dialogue-box">🗣️ "아우라는 숲 깊은 곳, 오래된 나무 근처에서 일하고 있을 걸세. 그 친구는 말이 별로 없으니, 잘 구슬려보게."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[DUNGEON] Step 3</div>
+                        <div class="step-desc">고블린 동굴을 조사하고 보물을 찾으십시오.</div>
+                        <div class="dialogue-box">🗣️ "아우라가 말한 동굴이 여기군. 고블린들이 안에 득실거려."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 4</div>
+                        <div class="step-desc">앰버에게 돌아가 퀘스트를 완료하십시오.</div>
+                        <div class="dialogue-box">🗣️ "앰버, 부탁한 물건을 가져왔소."</div>
+                    </div>
+                    </div>
+            
+        </div>
+        
+        <div class="card">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 2.5 Flash Lite 8192</span>
+                    <span class="tag tag-keyword">Keyword: 마법</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 9717ms</span>
+                    <span>📝 564 chars</span>
+                </div>
+            </div>
+            
+            <div class="quest-title">숲의 마법 흔적 조사</div>
+            <div class="quest-summary">숲에서 느껴지는 이상한 마법의 기운을 조사하고, 그 근원을 찾아달라는 의뢰입니다. 다가오는 월식 때문에 숲의 몬스터들이 더욱 난폭해지고 있습니다.</div>
+            <div class="steps-container">
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 1</div>
+                        <div class="step-desc">사냥꾼 앰버와 대화하세요.</div>
+                        <div class="dialogue-box">🗣️ "이 숲이 심상치 않아. 몬스터들이 평소보다 훨씬 난폭해졌어. 다가오는 월식 때문인 것 같아. 특히, 숲 깊은 곳에서 이상한 마법의 기운이 느껴지는데... 혹시 네가 좀 알아봐 줄 수 있겠나?"</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[MONSTER] Step 2</div>
+                        <div class="step-desc">이상한 마법의 기운을 내뿜는 고블린을 처치하세요.</div>
+                        <div class="dialogue-box">🗣️ "숲 깊은 곳에서 마법의 기운이 흘러나오는 걸 느꼈어. 아마도 그 마법에 영향을 받은 몬스터가 있을 거야. 가장 가까운 곳에서 느껴지는 건 고블린 무리인데, 녀석들이 평소와 다르다면 마법 때문일지도 몰라. 녀석들을 먼저 처리해주게."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[DUNGEON] Step 3</div>
+                        <div class="step-desc">마법의 기운이 흘러나오는 동굴을 조사하세요.</div>
+                        <div class="dialogue-box">🗣️ "고블린들이 마법에 영향을 받았던 게 맞다면, 그 마법의 근원은 더 깊은 곳에 있을 거야. 숲 속 깊은 곳에 오래된 동굴이 있는데, 그곳에서 수상한 마법의 기운이 흘러나오고 있다고 하더군. 그 동굴 안을 조사해서 마법의 근원을 찾아봐 주게."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 4</div>
+                        <div class="step-desc">앰버에게 조사 결과를 보고하세요.</div>
+                        <div class="dialogue-box">🗣️ "동굴 조사를 마쳤습니다. (마법의 근원에 대한 정보를 전달)"</div>
+                    </div>
+                    </div>
+            
+        </div>
+        
+        <div class="card">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 2.5 Flash Lite 8192</span>
+                    <span class="tag tag-keyword">Keyword: 보물</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 7857ms</span>
+                    <span>📝 387 chars</span>
+                </div>
+            </div>
+            
+            <div class="quest-title">보물 사냥꾼의 의뢰</div>
+            <div class="quest-summary">사냥꾼 앰버가 숲에서 발견한 고대 보물에 대한 단서를 찾아달라고 의뢰합니다.</div>
+            <div class="steps-container">
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 1</div>
+                        <div class="step-desc">사냥꾼 앰버와 대화하세요.</div>
+                        <div class="dialogue-box">🗣️ "이 숲이 점점 위험해지고 있어. 곧 닥쳐올 식량을 찾기 위해 숲 깊숙한 곳으로 들어갔다가, 고대 유적에서 보물에 대한 이야기를 들었네. 하지만 몬스터들이 그 근처를 배회하고 있어. 자네가 그 보물에 대한 단서를 가져다주게."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[DUNGEON] Step 2</div>
+                        <div class="step-desc">고대 유적이 있는 동굴(DUN002_cave)을 탐험하고 보물에 대한 단서를 찾으세요.</div>
+                        <div class="dialogue-box">🗣️ "그 동굴 안에는 오래된 보물에 대한 이야기가 숨겨져 있을 거야. 하지만 몬스터들이 득실거릴 테니 조심해야 하네. 놈들을 피해 동굴 깊숙한 곳에서 보물에 대한 단서를 찾아오게."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 3</div>
+                        <div class="step-desc">찾은 단서를 가지고 앰버에게 돌아가세요.</div>
+                        <div class="dialogue-box">🗣️ "동굴에서 보물에 대한 단서를 찾았어. 앰버에게 돌아가서 이걸 전해야겠군."</div>
+                    </div>
+                    </div>
+            
+        </div>
+        
+        <div class="card">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 2.5 Flash Lite 8192</span>
+                    <span class="tag tag-keyword">Keyword: 보물</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 7960ms</span>
+                    <span>📝 484 chars</span>
+                </div>
+            </div>
+            
+            <div class="quest-title">숨겨진 보물을 찾아서</div>
+            <div class="quest-summary">사냥꾼 앰버는 다가오는 월식으로 인해 숲이 위험해지자, 숲 깊숙한 곳에 숨겨진 고대의 보물을 찾아달라고 플레이어에게 의뢰합니다.</div>
+            <div class="steps-container">
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 1</div>
+                        <div class="step-desc">사냥꾼 앰버와 대화하십시오.</div>
+                        <div class="dialogue-box">🗣️ "숲이 점점 더 위험해지고 있어. 다가오는 월식 때문에 짐승들이 난폭해지고 있거든. 고대의 보물에 대한 소문이 있는데, 그걸 찾으면 이 위기를 극복할 방법을 찾을지도 몰라. 하지만 혼자서는 무리야."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[DUNGEON] Step 2</div>
+                        <div class="step-desc">보물이 숨겨져 있다는 소문이 있는 'woods' 던전을 탐험하십시오.</div>
+                        <div class="dialogue-box">🗣️ "숲 깊은 곳에 오래된 유적이 있다고 해. 그곳에 보물이 숨겨져 있을 가능성이 높아. 짐승들이 난폭해지기 전에 서둘러야 해. 조심해서 다녀오게."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[KILL] Step 3</div>
+                        <div class="step-desc">'woods' 던전에서 앰버가 말한 'goblin'들을 처치하십시오.</div>
+                        <div class="dialogue-box">🗣️ "이 던전 안에는 고블린들이 득실거리는군. 보물을 찾기 전에 이 녀석들을 먼저 처리해야겠어."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 4</div>
+                        <div class="step-desc">보물을 찾았거나 단서를 얻었다면 앰버에게 돌아가 보고하십시오.</div>
+                        <div class="dialogue-box">🗣️ "고블린들을 모두 처치했으니, 이제 보물을 찾아야지. 앰버에게 돌아가서 상황을 보고해야겠다."</div>
+                    </div>
+                    </div>
+            
+        </div>
+        
+        <div class="card">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 2.5 Flash 8192</span>
+                    <span class="tag tag-keyword">Keyword: 사랑</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 29552ms</span>
+                    <span>📝 511 chars</span>
+                </div>
+            </div>
+            
+            <div class="quest-title">잃어버린 마음</div>
+            <div class="quest-summary">사냥꾼 앰버는 숲으로 나간 나무꾼 아우라가 돌아오지 않자 걱정합니다. 플레이어는 위험한 숲에서 아우라를 찾아 그녀를 위협하는 고블린들로부터 지켜야 합니다.</div>
+            <div class="steps-container">
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 1</div>
+                        <div class="step-desc">사냥꾼 앰버와 대화하여 아우라에 대한 소식을 듣습니다.</div>
+                        <div class="dialogue-box">🗣️ "아우라가 숲으로 간 지 너무 오래되었어. 요즘 숲은 위험해. 해가 지기 전에 돌아오지 않으면… 무슨 일이 생길까 봐 두렵다. 자네가 아우라를 찾아 숲으로 가 주겠나?"</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[GOTO] Step 2</div>
+                        <div class="step-desc">위험한 숲 속으로 들어가 아우라를 찾습니다.</div>
+                        <div class="dialogue-box">🗣️ "아우라는 보통 숲 깊숙한 곳, 오래된 나무 근처에서 나무를 베곤 했지. 그곳을 먼저 찾아보게."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[KILL] Step 3</div>
+                        <div class="step-desc">아우라를 위협하는 고블린들을 처치합니다.</div>
+                        <div class="dialogue-box">🗣️ "고블린 무리가 아우라를 둘러싸고 있다. 그녀를 구해야 한다."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 4</div>
+                        <div class="step-desc">안전해진 아우라와 대화하여 그녀의 상황을 확인합니다.</div>
+                        <div class="dialogue-box">🗣️ "고마워요... 당신이 아니었다면... 저 못된 것들이 제게서 이걸 빼앗으려 했어요. 앰버가 준 거예요..."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 5</div>
+                        <div class="step-desc">앰버에게 돌아가 아우라가 무사하다는 소식을 전합니다.</div>
+                        <div class="dialogue-box">🗣️ "앰버에게 아우라가 무사하다는 소식을 전해야겠다."</div>
+                    </div>
+                    </div>
+            
+        </div>
+        
+        <div class="card">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 2.5 Flash 8192</span>
+                    <span class="tag tag-keyword">Keyword: 마법</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 27151ms</span>
+                    <span>📝 428 chars</span>
+                </div>
+            </div>
+            
+            <div class="quest-title">숲을 뒤덮은 마법</div>
+            <div class="quest-summary">숲에 퍼진 수상한 마법의 기운을 조사하고, 그로 인해 난폭해진 고블린들을 처리하는 퀘스트.</div>
+            <div class="steps-container">
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 1</div>
+                        <div class="step-desc">벌목꾼 아우라와 대화하여 숲의 이상 현상에 대해 듣기.</div>
+                        <div class="dialogue-box">🗣️ "요즘 숲이 심상치 않아. 몬스터들이 더 난폭해졌고, 이상한 기운이 느껴져. 벌목꾼 아우라가 숲 깊은 곳에서 수상한 것을 봤다고 하더군. 마법과 관련이 있을지도 몰라. 그녀를 찾아가 무슨 일이 있었는지 들어봐."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[DUNGEON] Step 2</div>
+                        <div class="step-desc">아우라가 언급한 숲 깊은 곳으로 가서 마법 기운의 근원 조사하기.</div>
+                        <div class="dialogue-box">🗣️ "아우라의 말대로 숲 깊은 곳으로 가 마법의 기운을 조사해야겠군. 오래된 나무 근처라고 했지."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[KILL] Step 3</div>
+                        <div class="step-desc">마법의 기운에 홀려 난폭해진 고블린들을 처치하기.</div>
+                        <div class="dialogue-box">🗣️ "이 고블린들은 마법의 기운에 완전히 미쳐버렸군. 더 큰 피해를 막기 위해 처치해야겠어."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 4</div>
+                        <div class="step-desc">퀘스트 의뢰자인 앰버에게 돌아가 숲에서 겪은 일을 보고하기.</div>
+                        <div class="dialogue-box">🗣️ "앰버에게 숲에서 겪은 일과 마법의 기운에 대해 자세히 말해줘야겠어."</div>
+                    </div>
+                    </div>
+            
+        </div>
+        
+        <div class="card">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 2.5 Flash 8192</span>
+                    <span class="tag tag-keyword">Keyword: 마법</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 25089ms</span>
+                    <span>📝 686 chars</span>
+                </div>
+            </div>
+            
+            <div class="quest-title">어둠의 동굴 마법</div>
+            <div class="quest-summary">숲에 드리운 기이한 마법의 기운을 조사하고, 그 근원을 찾아 해결해야 합니다. 벌목꾼 아우라에게서 단서를 얻고, 동굴 속 고블린들의 수상한 움직임을 저지하세요.</div>
+            <div class="steps-container">
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 1</div>
+                        <div class="step-desc">사냥꾼 앰버와 대화하여 숲의 이상 현상에 대해 듣습니다.</div>
+                        <div class="dialogue-box">🗣️ "여행자여, 숲이 심상치 않소. 그림자가 너무 길고, 동물들도 이상하게 날뛰지. 특히 오래된 동굴 근처에서 기분 나쁜 기운이 느껴지오. 혹시 벌목꾼 아우라를 만난다면, 그녀에게 무슨 일이 있었는지 물어봐 주겠소? 그녀는 숲 깊은 곳에서 일하니 무언가 보았을지도 모르오."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 2</div>
+                        <div class="step-desc">벌목꾼 아우라를 찾아 숲의 이상 현상에 대해 묻습니다.</div>
+                        <div class="dialogue-box">🗣️ "…(침묵)… 숲이… 변했어요. 동굴 쪽에서… 이상한 빛이 보이고… 고블린들이… 뭔가 중얼거리는 소리가 들려요. 어둡고… 불길한… 마법 같아요. 그들이… 일식을 기다리는 것 같았어요…"</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[DUNGEON] Step 3</div>
+                        <div class="step-desc">수상한 기운이 느껴지는 숲 속 동굴(DUN002_cave)을 조사합니다.</div>
+                        <div class="dialogue-box">🗣️ "아우라의 말대로 동굴에서 불길한 마법의 기운이 느껴진다. 안으로 들어가 조사를 해야겠군."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[KILL] Step 4</div>
+                        <div class="step-desc">동굴 안에서 어둠의 마법을 부리는 고블린(MON001_goblin)들을 처치합니다.</div>
+                        <div class="dialogue-box">🗣️ "이런, 고블린들이 동굴 안에서 기괴한 의식을 치르고 있다. 이들이 숲을 오염시키고 있었군. 놈들을 막아야 해!"</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 5</div>
+                        <div class="step-desc">사냥꾼 앰버에게 돌아가 동굴에서 있었던 일을 보고합니다.</div>
+                        <div class="dialogue-box">🗣️ "무사히 돌아왔군! 동굴에서 무슨 일이 있었소? 그 불길한 기운이 사라진 것 같긴 한데… 자세히 말해주시오."</div>
+                    </div>
+                    </div>
+            
+        </div>
+        
+        <div class="card">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 2.5 Pro 8192</span>
+                    <span class="tag tag-keyword">Keyword: 마법</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 56875ms</span>
+                    <span>📝 568 chars</span>
+                </div>
+            </div>
+            
+            <div class="quest-title">동굴의 수상한 주술</div>
+            <div class="quest-summary">사냥꾼 앰버는 다가오는 일식의 영향으로 숲에 이상한 마법의 기운이 감도는 것을 감지했습니다. 그녀는 플레이어에게 목격자인 벌목꾼 아우라를 찾아가 단서를 얻고, 문제의 근원인 동굴의 고블린들을 처리해달라고 요청합니다.</div>
+            <div class="steps-container">
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 1</div>
+                        <div class="step-desc">숲에 있는 벌목꾼 아우라와 대화하십시오.</div>
+                        <div class="dialogue-box">🗣️ "모험가, 마침 잘 만났군. 요즘 숲의 기운이 심상치 않아. 특히 오래된 나무 근처에서 기분 나쁜 마법의 기운이 느껴져. 다가오는 일식 때문에 괴물들이 미쳐 날뛰는 것 같아. 벌목꾼 아우라가 그 근처에서 뭔가를 봤다는 소문이 있으니, 그녀에게 가서 자세한 얘기를 들어봐 줘."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[DUNGEON] Step 2</div>
+                        <div class="step-desc">아우라가 언급한 동굴로 이동하십시오.</div>
+                        <div class="dialogue-box">🗣️ "(주변을 살피며) 쉬... 조용히 말해야 해요. 며칠 전, 오래된 나무 근처 동굴에서... 끔찍한 걸 봤어요. 고블린들이 이상하게 빛나는 돌을 들고 알아들을 수 없는 주문을 외우고 있었어요. 사악한 의식 같았어요. 너무 무서워서 도망쳤지만, 그 빛이 아직도 눈에 선해요."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[KILL] Step 3</div>
+                        <div class="step-desc">동굴 안에서 사악한 의식을 거행하는 고블린들을 처치하십시오.</div>
+                        <div class="dialogue-box">🗣️ "아우라가 말한 게 저 고블린들이군. 저 사악한 기운... 놈들의 주술을 멈춰야 한다."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 4</div>
+                        <div class="step-desc">앰버에게 돌아가 임무 완료를 보고하십시오.</div>
+                        
+                    </div>
+                    </div>
+            
+        </div>
+        
+        <div class="card fail">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 2.5 Pro 8192</span>
+                    <span class="tag tag-keyword">Keyword: 배고파</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 53696ms</span>
+                    <span>📝 0 chars</span>
+                </div>
+            </div>
+            <div class="error-box">❌ 생성 실패: HTTP 500</div>
+        </div>
+        
+        <div class="card">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 2.5 Pro 8192</span>
+                    <span class="tag tag-keyword">Keyword: 사랑</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 68384ms</span>
+                    <span>📝 439 chars</span>
+                </div>
+            </div>
+            
+            <div class="quest-title">말하지 못한 마음</div>
+            <div class="quest-summary">헌터 앰버는 조용한 벌목꾼 아우라를 남몰래 걱정하고 있습니다. 다가오는 일식 때문에 흉포해진 고블린들이 아우라의 소중한 물건을 훔쳐 갔습니다. 앰버를 대신해 숲속의 고블린들을 처치하고 아우라의 물건을 되찾아주세요.</div>
+            <div class="steps-container">
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 1</div>
+                        <div class="step-desc">앰버와 대화하기</div>
+                        <div class="dialogue-box">🗣️ "벌목꾼 아우라... 안색이 안 좋아. 일식 때문에 고블린들이 날뛰고 있는데, 오래된 나무 근처에 있는 그 애의 작업장에서 놈들을 봤어. 그 앤 도움을 청할 성격이 아니지. ...자네가 가서 무슨 일인지 알아봐 주겠나? 난 경계 임무 때문에 바빠서."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 2</div>
+                        <div class="step-desc">아우라와 대화하기</div>
+                        <div class="dialogue-box">🗣️ "앰버가... 절 걱정해서 당신을 보냈다고요? ...사실, 고블린들이 아버지께서 만들어주신 유품인 나무 펜던트를 훔쳐 갔어요. 숲 깊은 곳으로 달아났는데..."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[KILL] Step 3</div>
+                        <div class="step-desc">숲속의 고블린들을 처치하고 펜던트 되찾기</div>
+                        <div class="dialogue-box">🗣️ "고블린들을 혼내주고 펜던트를 되찾아야겠군."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 4</div>
+                        <div class="step-desc">앰버에게 돌아가 보고하기</div>
+                        <div class="dialogue-box">🗣️ "고블린들에게서 펜던트를 되찾았습니다."</div>
+                    </div>
+                    </div>
+            
+        </div>
+        
+        <div class="card">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 3 Pro 4080</span>
+                    <span class="tag tag-keyword">Keyword: 평화</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 50815ms</span>
+                    <span>📝 411 chars</span>
+                </div>
+            </div>
+            
+            <div class="quest-title">숲의 평화를 위하여</div>
+            <div class="quest-summary">엠버는 일식의 영향으로 난폭해진 고블린들 때문에 숲의 평화가 깨졌다고 생각합니다. 벌목꾼 오라의 안전을 확인하고 소란의 원인을 제거해야 합니다.</div>
+            <div class="steps-container">
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 1</div>
+                        <div class="step-desc">벌목꾼 '오라'에게 가서 상황을 확인하세요.</div>
+                        <div class="dialogue-box">🗣️ "평화라고? 흥, 이 숲에서 평화를 원한다면 칼을 들어야지. 일식이 다가오자 놈들이 미쳐 날뛰고 있어."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[KILL] Step 2</div>
+                        <div class="step-desc">숲의 평화를 위협하는 고블린을 처치하세요.</div>
+                        <div class="dialogue-box">🗣️ "아... 엠버 님이 보내셨나요? 다행이에요."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 3</div>
+                        <div class="step-desc">엠버에게 돌아가 보고하세요.</div>
+                        <div class="dialogue-box">🗣️ "(고블린들이 쓰러지자 숲에 다시 정적이 찾아왔다. 엠버에게 돌아가자.)"</div>
+                    </div>
+                    </div>
+            
+        </div>
+        
+        <div class="card">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 3 Pro 4080</span>
+                    <span class="tag tag-keyword">Keyword: 보물</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 66894ms</span>
+                    <span>📝 445 chars</span>
+                </div>
+            </div>
+            
+            <div class="quest-title">도난당한 보물</div>
+            <div class="quest-summary">고블린들이 훔쳐 달아난 의문의 '보물'을 되찾기 위해 동굴을 조사해야 합니다.</div>
+            <div class="steps-container">
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 1</div>
+                        <div class="step-desc">벌목꾼 오라에게 고블린의 이동 경로 묻기</div>
+                        <div class="dialogue-box">🗣️ "숲이 소란스러워. 고블린 놈들이 고대 왕국의 폐허에서 반짝이는 '보물' 상자를 훔쳐 달아나는 걸 봤어."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[KILL] Step 2</div>
+                        <div class="step-desc">동굴 입구를 지키는 고블린 처치</div>
+                        <div class="dialogue-box">🗣️ "...앰버 님이 보내셨군요. 네, 봤어요. 놈들이 늙은 나무 뿌리 쪽을 지나 북쪽 동굴로 들어갔습니다."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[DUNGEON] Step 3</div>
+                        <div class="step-desc">동굴을 탐색하여 보물 회수</div>
+                        <div class="dialogue-box">🗣️ "보초들을 처리했다. 놈들이 숨긴 보물을 찾아야 해."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 4</div>
+                        <div class="step-desc">앰버에게 보물 전달</div>
+                        <div class="dialogue-box">🗣️ "상자를 찾았다. 앰버에게 돌아가서 확인해보자."</div>
+                    </div>
+                    </div>
+            
+        </div>
+        
+        <div class="card">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 3 Pro 4080</span>
+                    <span class="tag tag-keyword">Keyword: 마법</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 63133ms</span>
+                    <span>📝 392 chars</span>
+                </div>
+            </div>
+            
+            <div class="quest-title">마력에 물든 숲</div>
+            <div class="quest-summary">다가오는 일식의 영향으로 숲에 기이한 마력이 감돌고 있습니다. 엠버는 고목(Old Tree) 근처에서 이상 현상을 목격한 벌목꾼 오라를 만나보고, 마력에 폭주하는 고블린들을 처치해달라고 부탁했습니다.</div>
+            <div class="steps-container">
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 1</div>
+                        <div class="step-desc">벌목꾼 오라(Aura)에게 상황 듣기</div>
+                        <div class="dialogue-box">🗣️ "자네도 느꼈나? 숲의 공기가 달라졌어. 다가오는 일식 때문인지, 고목(Old Tree) 근처에서 탁한 마력이 느껴져."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[KILL] Step 2</div>
+                        <div class="step-desc">마력에 폭주하는 고블린 처치</div>
+                        <div class="dialogue-box">🗣️ "흐윽... 너무 무서웠어요. 고블린들이 갑자기 이상한 주문을 외우더니 눈이 보라색으로 변했어요!"</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 3</div>
+                        <div class="step-desc">엠버에게 보고하기</div>
+                        <div class="dialogue-box">🗣️ "(고블린들이 쓰러지자 주변의 탁한 기운이 걷혔다. 엠버에게 돌아가자.)"</div>
+                    </div>
+                    </div>
+            
+        </div>
+        
+        <div class="card">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 3 Pro 8192</span>
+                    <span class="tag tag-keyword">Keyword: 마법</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 64848ms</span>
+                    <span>📝 424 chars</span>
+                </div>
+            </div>
+            
+            <div class="quest-title">뒤틀린 숲의 마력</div>
+            <div class="quest-summary">다가오는 일식의 영향으로 숲의 마력이 불안정해졌습니다. 벌목꾼 오라를 만나 단서를 얻고, 마력의 근원지인 동굴을 조사하여 고블린들의 의식을 막으십시오.</div>
+            <div class="steps-container">
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 1</div>
+                        <div class="step-desc">벌목꾼 '오라'와 대화하여 단서 얻기</div>
+                        <div class="dialogue-box">🗣️ "자네도 느꼈나? 피부를 찌르는 듯한 이 기운... 마법이야. 다가오는 일식 때문인지 숲의 균형이 무너지고 있어."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[DUNGEON] Step 2</div>
+                        <div class="step-desc">마력이 흘러나오는 '동굴' 조사 및 클리어</div>
+                        <div class="dialogue-box">🗣️ "앰버 님이 보내셨군요. 다행이에요. 저기 '오래된 나무' 근처 동굴에서... 고블린들이 이상한 주문을 외우고 있어요."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 3</div>
+                        <div class="step-desc">사냥꾼 '앰버'에게 보고하기</div>
+                        <div class="dialogue-box">🗣️ "동굴 안의 고블린 주술사들을 처치하고 마력의 폭주를 잠재웠다. 앰버에게 돌아가자."</div>
+                    </div>
+                    </div>
+            
+        </div>
+        
+        <div class="card">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 3 Pro 8192</span>
+                    <span class="tag tag-keyword">Keyword: 사랑</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 61295ms</span>
+                    <span>📝 420 chars</span>
+                </div>
+            </div>
+            
+            <div class="quest-title">숲의 그림자 속 연정</div>
+            <div class="quest-summary">사냥꾼 앰버는 위험해진 숲에서 나무꾼 아우라를 걱정하고 있습니다. 앰버를 대신해 아우라를 위한 보호 부적의 재료를 구하고 마음을 전달해야 합니다.</div>
+            <div class="steps-container">
+                    <div class="step">
+                        <div class="step-header">[KILL] Step 1</div>
+                        <div class="step-desc">숲에서 사슴을 사냥하여 '질 좋은 가죽'을 구하십시오.</div>
+                        <div class="dialogue-box">🗣️ "요즘 숲의 공기가 무거워. 괴물들이 일식 때문에 미쳐 날뛰고 있지. ...사실 걱정되는 사람이 있어."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 2</div>
+                        <div class="step-desc">나무꾼 아우라에게 앰버의 '가죽 부적'을 전달하십시오.</div>
+                        <div class="dialogue-box">🗣️ "(사슴 가죽을 손질하여 투박하지만 정성스러운 부적을 만들었다. 아우라에게 가져가자.)"</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 3</div>
+                        <div class="step-desc">앰버에게 돌아가 결과를 보고하십시오.</div>
+                        <div class="dialogue-box">🗣️ "아우라가 선물을 기쁘게 받았다. 앰버에게 돌아가자."</div>
+                    </div>
+                    </div>
+            
+        </div>
+        
+        <div class="card">
+            <div class="meta">
+                <div>
+                    <span class="tag tag-model">Gemini 3 Pro 8192</span>
+                    <span class="tag tag-keyword">Keyword: 전쟁</span>
+                </div>
+                <div class="meta-info">
+                    <span class="tag tag-time">⏱️ 48840ms</span>
+                    <span>📝 460 chars</span>
+                </div>
+            </div>
+            
+            <div class="quest-title">다가오는 전쟁의 그림자</div>
+            <div class="quest-summary">엠버는 숲의 몬스터들이 군대처럼 조직적으로 움직이는 것을 감지했습니다. 벌목꾼 아우라에게 경고하고 고블린 정찰대를 처치하여 전쟁의 서막을 막아야 합니다.</div>
+            <div class="steps-container">
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 1</div>
+                        <div class="step-desc">벌목꾼 '아우라'에게 위험을 알리십시오.</div>
+                        <div class="dialogue-box">🗣️ "숲의 공기가 달라졌어. 단순한 야생의 본능이 아니야. 놈들이 대열을 갖추고 있어. 이건 사냥이 아니라... 전쟁이다."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[KILL] Step 2</div>
+                        <div class="step-desc">숲을 배회하는 '고블린' 정찰대를 처치하십시오.</div>
+                        <div class="dialogue-box">🗣️ "전쟁이라니... 어쩐지 숲이 너무 조용했어요. 저도 놈들이 동굴 쪽으로 행군하는 소리를 들었습니다."</div>
+                    </div>
+                    
+                    <div class="step">
+                        <div class="step-header">[TALK] Step 3</div>
+                        <div class="step-desc">사냥꾼 '엠버'에게 돌아가 보고하십시오.</div>
+                        <div class="dialogue-box">🗣️ "고블린 정찰대를 모두 처리했다. 놈들이 진영을 갖추기 전에 막았다."</div>
+                    </div>
+                    </div>
+            
+        </div>
+        
+        </div>
+    </body>
+    </html>
+    
