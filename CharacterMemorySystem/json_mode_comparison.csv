@@ -1,0 +1,11 @@
+Scenario,Keyword,Success,Latency_ms,Error
+Legacy (Text Mode),보물,True,46915.85850715637,None
+Legacy (Text Mode),비밀,True,51360.70919036865,None
+Legacy (Text Mode),사랑,True,53208.903551101685,None
+Legacy (Text Mode),보물,True,55889.34111595154,None
+Legacy (Text Mode),배고파,True,63054.001808166504,None
+New (JSON Mode),전쟁,True,54492.8092956543,None
+New (JSON Mode),전쟁,True,66800.96459388733,None
+New (JSON Mode),전쟁,True,55067.360401153564,None
+New (JSON Mode),보물,True,58414.888858795166,None
+New (JSON Mode),전쟁,True,60124.449014663696,None
