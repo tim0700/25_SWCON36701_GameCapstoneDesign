@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Data;
+using System.IO;
 using Mono.Data.Sqlite;
 using System.Collections.Generic;
 
@@ -127,48 +128,8 @@ public class DatabaseInitializer : MonoBehaviour
                 )";
                 cmd.ExecuteNonQuery();
 
-                //여기서부터 하드 코딩
-                // 하드코딩된 관계 데이터 삽입 예시
-                cmd.CommandText = "INSERT OR REPLACE INTO NPC_RELATION (NPC1ID, NPC2ID, RELATION) VALUES (@npc1, @npc2, @relation);";
-                cmd.Parameters.Clear();
-
-                var pNpc1 = cmd.CreateParameter();
-                pNpc1.ParameterName = "@npc1";
-                pNpc1.Value = "NPC001_Amber";
-                cmd.Parameters.Add(pNpc1);
-
-                var pNpc2 = cmd.CreateParameter();
-                pNpc2.ParameterName = "@npc2";
-                pNpc2.Value = "NPC002_Aura";
-                cmd.Parameters.Add(pNpc2);
-
-                var pRelation = cmd.CreateParameter();
-                pRelation.ParameterName = "@relation";
-                pRelation.Value = "friend";
-                cmd.Parameters.Add(pRelation);
-
-                cmd.ExecuteNonQuery();
-
-                // 추가 관계도 반복해서 삽입 가능
-                cmd.CommandText = "INSERT OR REPLACE INTO NPC_RELATION (NPC1ID, NPC2ID, RELATION) VALUES (@npc1, @npc2, @relation);";
-                cmd.Parameters.Clear();
-
-                var pNpc1_2 = cmd.CreateParameter();
-                pNpc1_2.ParameterName = "@npc1";
-                pNpc1_2.Value = "NPC001_Amber";
-                cmd.Parameters.Add(pNpc1_2);
-
-                var pNpc2_2 = cmd.CreateParameter();
-                pNpc2_2.ParameterName = "@npc2";
-                pNpc2_2.Value = "NPC003_Katie";
-                cmd.Parameters.Add(pNpc2_2);
-
-                var pRelation_2 = cmd.CreateParameter();
-                pRelation_2.ParameterName = "@relation";
-                pRelation_2.Value = "rival";
-                cmd.Parameters.Add(pRelation_2);
-
-                cmd.ExecuteNonQuery();
+                // NPC 데이터는 JSON 파일에서 로드
+                // (LoadNPCsFromJson 메서드에서 처리)
 
             }
 
@@ -298,9 +259,129 @@ public class DatabaseInitializer : MonoBehaviour
                 }
 
 
-            }   
+            }
+
+            // NPC 및 NPC_RELATION 데이터를 JSON에서 로드
+            LoadNPCsFromJson(dbConnection);
         }
 
         Debug.Log("Database initialized successfully.");
+    }
+
+    /// <summary>
+    /// StreamingAssets/npcs/ 폴더의 JSON 파일들을 파싱하여 NPC 및 NPC_RELATION 테이블에 삽입
+    /// </summary>
+    private void LoadNPCsFromJson(IDbConnection dbConnection)
+    {
+        string npcsPath = Path.Combine(Application.streamingAssetsPath, "npcs");
+        
+        if (!Directory.Exists(npcsPath))
+        {
+            Debug.LogWarning($"NPC JSON folder not found: {npcsPath}");
+            return;
+        }
+
+        string[] jsonFiles = Directory.GetFiles(npcsPath, "*.json");
+        int npcCount = 0;
+        int relationCount = 0;
+
+        using (IDbCommand cmd = dbConnection.CreateCommand())
+        {
+            foreach (string filePath in jsonFiles)
+            {
+                try
+                {
+                    string jsonContent = File.ReadAllText(filePath);
+                    NPCCharacterSheet npc = JsonUtility.FromJson<NPCCharacterSheet>(jsonContent);
+
+                    if (npc == null || string.IsNullOrEmpty(npc.npc_id))
+                    {
+                        Debug.LogWarning($"Invalid NPC JSON: {filePath}");
+                        continue;
+                    }
+
+                    // 외래키 오류 방지: LOCID가 LOC 테이블에 있는지 확인
+                    string locId = npc.primary_location;
+                    if (!string.IsNullOrEmpty(locId)) 
+                    {
+                        cmd.CommandText = $"SELECT COUNT(*) FROM LOC WHERE LOCID = '{locId}'";
+                        long count = (long)cmd.ExecuteScalar();
+                        
+                        // 없다면 임시로 생성 (또는 경고 로그)
+                        if (count == 0)
+                        {
+                            Debug.LogWarning($"[DB] Location '{locId}' not found for NPC '{npc.name}'. Creating placeholder location.");
+                            cmd.CommandText = "INSERT OR REPLACE INTO LOC (LOCID, NAME) VALUES (@locId, @locName)";
+                            cmd.Parameters.Clear();
+                            AddParameter(cmd, "@locId", locId);
+                            AddParameter(cmd, "@locName", locId); // 이름도 ID로 임시 설정
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+
+                    // NPC 테이블에 삽입
+                    cmd.CommandText = @"INSERT OR REPLACE INTO NPC 
+                        (NPCID, NAME, AGE, GENDER, ROLE, FACTION, PERSONALITY, SPEAKING_STYLE, LOCID) 
+                        VALUES (@npcId, @name, @age, @gender, @role, @faction, @personality, @speakingStyle, @locId);";
+                    cmd.Parameters.Clear();
+
+                    AddParameter(cmd, "@npcId", npc.npc_id);
+                    AddParameter(cmd, "@name", npc.name);
+                    AddParameter(cmd, "@age", npc.age);
+                    AddParameter(cmd, "@gender", npc.gender);
+                    AddParameter(cmd, "@role", npc.role_title);
+                    AddParameter(cmd, "@faction", npc.faction);
+                    
+                    // personality_keywords를 쉼표로 연결
+                    string personality = npc.psychological_profile?.personality_keywords != null 
+                        ? string.Join(", ", npc.psychological_profile.personality_keywords) 
+                        : "";
+                    AddParameter(cmd, "@personality", personality);
+                    
+                    AddParameter(cmd, "@speakingStyle", npc.psychological_profile?.speaking_style ?? "");
+                    AddParameter(cmd, "@locId", npc.primary_location);
+
+                    cmd.ExecuteNonQuery();
+                    npcCount++;
+
+                    // NPC_RELATION 테이블에 관계 삽입
+                    if (npc.relationships_and_knowledge?.relationships != null)
+                    {
+                        foreach (var relation in npc.relationships_and_knowledge.relationships)
+                        {
+                            if (string.IsNullOrEmpty(relation.target_id)) continue;
+
+                            cmd.CommandText = @"INSERT OR REPLACE INTO NPC_RELATION 
+                                (NPC1ID, NPC2ID, RELATION) VALUES (@npc1, @npc2, @relation);";
+                            cmd.Parameters.Clear();
+
+                            AddParameter(cmd, "@npc1", npc.npc_id);
+                            AddParameter(cmd, "@npc2", relation.target_id);
+                            AddParameter(cmd, "@relation", relation.type);
+
+                            cmd.ExecuteNonQuery();
+                            relationCount++;
+                        }
+                    }
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogError($"Error loading NPC from {filePath}: {e.Message}");
+                }
+            }
+        }
+
+        Debug.Log($"Loaded {npcCount} NPCs and {relationCount} relationships from JSON files.");
+    }
+
+    /// <summary>
+    /// IDbCommand에 파라미터를 추가하는 헬퍼 메서드
+    /// </summary>
+    private void AddParameter(IDbCommand cmd, string name, string value)
+    {
+        var param = cmd.CreateParameter();
+        param.ParameterName = name;
+        param.Value = value ?? "";
+        cmd.Parameters.Add(param);
     }
 }

@@ -1,0 +1,58 @@
+{
+  "npc_id": "NPC004_Elda",
+  "name": "Elda",
+  "age": "72",
+  "gender": "여성",
+  "role_title": "마을 장로",
+  "faction": "마을 원로회",
+  "primary_location": "LOC001_MoonlightForest",
+  "psychological_profile": {
+    "personality_keywords": [
+      "지혜로움",
+      "신비주의",
+      "통찰력",
+      "온화함",
+      "전통적"
+    ],
+    "speaking_style": "고어와 옛 속담을 인용하는 고풍스럽고 정중한 말투. 말의 템포가 느리고 차분하며, 듣는 이에게 묘한 안정감을 준다.",
+    "example_lines": [
+      "흐르는 물이 바위를 깎듯, 시간은 모든 진실을 드러내지.",
+      "가론 그 아이는 불같은 성정을 지녔으나, 그 속은 누구보다 여리고 따뜻하단다.",
+      "달빛 연못의 그림자가 길어지는구나. 바람이 전하는 옛 이야기를 들어보겠나?"
+    ],
+    "core_values": [
+      "역사의 보존",
+      "공동체의 안녕",
+      "자연의 섭리"
+    ]
+  },
+  "goals_and_motivations": {
+    "long_term_goal": "고대 신전의 봉인이 풀리지 않도록 감시하고, 마을의 숨겨진 역사를 올바른 계승자에게 전달하는 것",
+    "short_term_goal": "다가오는 축제 기간 동안 마을을 보호하고, 가론이 자신의 운명을 받아들일 수 있도록 돕는 것"
+  },
+  "relationships_and_knowledge": {
+    "relationships": [
+      {
+        "target_id": "NPC001_Garon",
+        "type": "보호자적 애정",
+        "reason": "혈육은 아니지만 친손자처럼 아끼며, 그의 불같은 성격을 걱정하여 항상 주시하고 있다."
+      }
+    ],
+    "knowledge_base": {
+      "facts": [
+        "마을 중앙의 고목 뿌리 아래에 고대 신전으로 통하는 비밀 통로가 존재한다는 사실",
+        "달빛 연못은 단순한 연못이 아니라 고대 봉인 의식이 행해지던 성소라는 역사",
+        "가론의 조상들이 대대로 신전의 수호자였다는 가문의 비밀"
+      ],
+      "rumors": [
+        "달이 붉게 변하는 날 연못에서 노래 소리가 들린다는 소문",
+        "엘다 장로가 사실은 인간이 아니라 숲의 정령이라는 마을 사람들의 쑥덕거림"
+      ]
+    }
+  },
+  "_metadata": {
+    "generated_at": "2025-12-08T09:26:58.240886Z",
+    "schema_version": "2.2",
+    "file_path": "data\\npcs\\NPC004_Elda.json"
+  }
+}
