@@ -27,7 +27,7 @@
 
 기존 게임의 NPC는 정해진 스크립트에 의존하여 플레이어와의 이전 대화나 행동을 **기억하지 못합니다**. 이는 반복적이고 단조로운 게임 경험을 야기하는 주요 원인이었습니다.
 
-본 프로젝트는 **LLM(Large Language Model)**과 **RAG(Retrieval-Augmented Generation)** 기술을 활용하여, NPC가 과거 상호작용을 기억하고 이를 기반으로 **연속성 있는 퀘스트를 자동 생성**하는 시스템을 제안합니다.
+본 프로젝트는 **LLM(Large Language Model)** 과 **RAG(Retrieval-Augmented Generation)** 기술을 활용하여, NPC가 과거 상호작용을 기억하고 이를 기반으로 **연속성 있는 퀘스트를 자동 생성**하는 시스템을 제안합니다.
 
 ### ✨ 핵심 가치
 
