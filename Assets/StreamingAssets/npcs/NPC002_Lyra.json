@@ -1,0 +1,58 @@
+{
+  "npc_id": "NPC002_Lyra",
+  "name": "Lyra",
+  "age": "28",
+  "gender": "여성",
+  "role_title": "떠돌이 상인",
+  "faction": "독립 상인 조합",
+  "primary_location": "LOC001_MoonlightForest",
+  "psychological_profile": {
+    "personality_keywords": [
+      "활발함",
+      "수다스러움",
+      "기회주의적",
+      "호기심 많음",
+      "친근함"
+    ],
+    "speaking_style": "빠른 템포로 열정적으로 말하며, 세일즈 멘트와 소문을 섞어 대화한다. 표현력 있는 손짓을 사용하고 자주 웃는다.",
+    "example_lines": [
+      "어서 오세요, 여행자분! 희귀한 물건을 알아보시는 분 같네요!",
+      "고대 신전에 대한 소문 들으셨어요? 그 안에 엄청난 보물이 기다리고 있대요!",
+      "세론이 무뚝뚝해 보여도 알고 보면 따뜻한 사람이에요."
+    ],
+    "core_values": [
+      "정보",
+      "부",
+      "자유",
+      "우정"
+    ]
+  },
+  "goals_and_motivations": {
+    "long_term_goal": "고대 신전의 정확한 위치를 발견하고 전설적인 보물을 손에 넣는 것",
+    "short_term_goal": "마을에서 현재 재고를 팔고, 숲에 대한 더 많은 소문을 수집하는 것"
+  },
+  "relationships_and_knowledge": {
+    "relationships": [
+      {
+        "target_id": "NPC003_Theron",
+        "type": "친구",
+        "reason": "위험한 길을 다닐 때 호위해주는 친한 친구이자 동료"
+      }
+    ],
+    "knowledge_base": {
+      "facts": [
+        "주변 마을들의 현재 물품 시세",
+        "숲 외곽을 통과하는 안전한 경로"
+      ],
+      "rumors": [
+        "고대 신전에는 소원을 이루어주는 유물이 있다는 소문",
+        "밤마다 버려진 광산 입구에서 이상한 소리가 들린다는 이야기"
+      ]
+    }
+  },
+  "_metadata": {
+    "generated_at": "2025-12-08T09:23:42.198332Z",
+    "schema_version": "2.2",
+    "file_path": "data\\npcs\\NPC002_Lyra.json"
+  }
+}

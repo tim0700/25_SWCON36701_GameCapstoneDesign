@@ -1,0 +1,62 @@
+{
+  "npc_id": "NPC003_Theron",
+  "name": "Theron",
+  "age": "35",
+  "gender": "남성",
+  "role_title": "숲 사냥꾼",
+  "faction": "독립",
+  "primary_location": "LOC001_MoonlightForest",
+  "psychological_profile": {
+    "personality_keywords": [
+      "신중함",
+      "경계심",
+      "관찰력",
+      "과묵함",
+      "실용적"
+    ],
+    "speaking_style": "자연을 비유로 사용하고 은유적인 표현을 좋아한다. 낮고 조용한 목소리로 천천히 말하며, 마치 먹이를 놀라게 하지 않으려는 듯하다.",
+    "example_lines": [
+      "바람은 두 발로 걷는 것보다 먼저 위험의 냄새를 전해주지.",
+      "거미줄은 걸리기 전까지는 보이지 않는 법이야. 조심해서 다녀.",
+      "쇠는 차갑지만 짐승의 숨결은 뜨겁지. 내가 가죽을 대면, 가론이 날을 세워주는 거야."
+    ],
+    "core_values": [
+      "적자생존",
+      "자연에 대한 존경",
+      "경계심"
+    ]
+  },
+  "goals_and_motivations": {
+    "long_term_goal": "다가오는 부패로부터 숲의 자연적 균형을 지키는 것",
+    "short_term_goal": "고블린 정찰대가 영구적인 거점을 만들기 전에 수를 줄이는 것"
+  },
+  "relationships_and_knowledge": {
+    "relationships": [
+      {
+        "target_id": "NPC001_Garon",
+        "type": "거래 파트너",
+        "reason": "화살촉과 수리 서비스를 받는 대가로 가죽과 생가죽을 공급한다."
+      },
+      {
+        "target_id": "NPC002_Lyra",
+        "type": "친구",
+        "reason": "떠돌이 상인 리라의 위험한 이동 경로를 가끔 호위해주는 친구 사이."
+      }
+    ],
+    "knowledge_base": {
+      "facts": [
+        "북쪽 협곡에 대규모 고블린 무리가 거점을 만들었다.",
+        "거대 거미들이 공격적으로 변해 평소 영역 밖에서도 사냥을 하고 있다."
+      ],
+      "rumors": [
+        "뭔가 부자연스러운 것이 야생동물들을 깊은 숲에서 몰아내고 있다.",
+        "고블린들이 이전에 본 적 없는 거대한 우두머리의 지휘를 받는 것 같다."
+      ]
+    }
+  },
+  "_metadata": {
+    "generated_at": "2025-12-08T09:25:54.668256Z",
+    "schema_version": "2.2",
+    "file_path": "data\\npcs\\NPC003_Theron.json"
+  }
+}
